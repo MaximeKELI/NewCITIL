@@ -1,0 +1,85 @@
+# ----------------------------------------
+# Fichiers d'environnement (CRUCIAL)
+# ----------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+.env.backup
+
+# Exemples autorisés (à versionner)
+!.env.example
+!.env.example.local
+
+# ----------------------------------------
+# Dossiers générés par Composer (Laravel)
+# ----------------------------------------
+/backend/vendor/
+/backend/bootstrap/cache/
+/backend/storage/*.key
+/backend/storage/logs/*
+/backend/storage/framework/*
+/backend/public/storage
+/backend/public/hot
+
+# ----------------------------------------
+# Dossiers générés par npm/yarn (React)
+# ----------------------------------------
+/frontend/node_modules
+/frontend/build
+/frontend/dist
+/frontend/.next
+/frontend/out
+/frontend/.nuxt
+/frontend/output
+
+# Cache et logs React
+/frontend/.cache
+/frontend/.vite
+/frontend/.parcel-cache
+
+# ----------------------------------------
+# Logs et fichiers temporaires
+# ----------------------------------------
+*.log
+*.cache
+*.tmp
+.DS_Store
+Thumbs.db
+
+# ----------------------------------------
+# Éditeurs de code
+# ----------------------------------------
+.idea/
+.vscode/
+.fleet/
+.nova/
+.zed/
+.phpactor.json
+
+# ----------------------------------------
+# Outils de développement
+# ----------------------------------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ----------------------------------------
+# Clés et certificats sensibles
+# ----------------------------------------
+*.pem
+*.key
+*.crt
+*.der
+
+# ----------------------------------------
+# Autres fichiers spécifiques
+# ----------------------------------------
+composer.phar
+Homestead.json
+Homestead.yaml
+.phpunit.result.cache
+.phpunit.cache
