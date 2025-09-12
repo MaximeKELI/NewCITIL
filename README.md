@@ -48,6 +48,6 @@ npm start
 git init
 git add .
 git commit -m "Projet initialisé : backend Laravel + frontend React"
-git remote add origin https://github.com/ton-pseudo/citil-projet.git
+git remote add originhttps://github.com/FulbertDev-AI/PLATEFORME-CITIL.git
 git branch -M main
 git push -u origin main
