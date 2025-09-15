@@ -1,3 +1,4 @@
+import { Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Home, Package, BookOpen, Users, MessageCircle, BarChart, Settings } from 'lucide-react';
 

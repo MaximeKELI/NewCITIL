@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 
-// Pages publiques
+// === PAGES PUBLIQUES ===
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
@@ -18,7 +18,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 
-// Pages d'administration
+// === PAGES D'ADMINISTRATION ===
 import AdminDashboard from './pages/Dashboard/AdminDashboard';
 import AdminProducts from './pages/Dashboard/AdminProducts';
 import AddProduct from './pages/Dashboard/AddProduct';
@@ -35,7 +35,7 @@ import AdminBlog from './pages/Dashboard/AdminBlog';
 import AddBlogPost from './pages/Dashboard/AddBlogPost';
 import EditBlogPost from './pages/Dashboard/EditBlogPost';
 
-// Composants globaux
+// === COMPOSANTS GLOBAUX ===
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartWidget from './components/CartWidget';
@@ -47,13 +47,10 @@ export default function App() {
   return (
     <CartProvider>
       <div className="min-h-screen flex flex-col bg-white">
-        {/* Navbar */}
         <Navbar onCartClick={() => setIsCartOpen(true)} />
-
-        {/* Contenu principal */}
         <main className="flex-1">
           <Routes>
-            {/* === PAGES PUBLIQUES === */}
+            {/* === ROUTES PUBLIQUES === */}
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/shop/:id" element={<ProductDetail />} />
@@ -69,7 +66,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* === ESPACE ADMINISTRATEUR === */}
+            {/* === ESPACE ADMIN === */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/products" element={<AdminProducts />} />
             <Route path="/admin/products/add" element={<AddProduct />} />
@@ -90,11 +87,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
-
-        {/* Footer */}
         <Footer />
-
-        {/* Panier flottant */}
         <CartWidget isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
     </CartProvider>
