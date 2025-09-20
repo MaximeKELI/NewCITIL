@@ -56,7 +56,6 @@ class ProductController extends Controller
             'category_id' => 'sometimes|required|exists:categories,id',
             'is_active' => 'boolean'
         ]);
-
         $product->update($validated);
         return response()->json($product);
     }

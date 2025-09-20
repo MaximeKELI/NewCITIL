@@ -19,7 +19,7 @@ class InternshipApplicationController extends Controller
             'full_name' => 'required|string|max:255',
             'email' => 'required|email',
             'phone' => 'required|string',
-            'cv_path' => 'required|string', // En prod, tu uploaderas le CV
+            'cv_path' => 'required|string', // En prod, le user uploadera le CV
             'message' => 'nullable|string',
             'status' => 'required|string|in:received,reviewed,accepted,rejected'
         ]);
