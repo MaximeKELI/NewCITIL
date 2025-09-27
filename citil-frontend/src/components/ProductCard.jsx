@@ -1,44 +1,26 @@
-import { ShoppingCart } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Button from './Button.jsx';
+import { useCart } from '../context/CartContext.js';
 
 export default function ProductCard({ product }) {
-  const { addToCart } = useCart();
-
-  return (
-    <div className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100">
-      <div className="relative overflow-hidden">
-        <img
-          src={product.image || "https://placehold.co/300x200/6366f1/ffffff?text=Produit+CITIL"}
-          alt={product.name}
-          className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        <div className="absolute top-3 right-3 bg-black/70 text-white px-2 py-1 rounded-full text-xs font-semibold">
-          {product.category?.name || "Électronique"}
-        </div>
-      </div>
-      
-      <div className="p-6">
-        <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-indigo-600 transition-colors">
-          {product.name}
-        </h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-          {product.description || "Composant électronique de haute qualité"}
-        </p>
-        
-        <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold text-indigo-600">
-            {product.price?.toLocaleString()} FCFA
-          </span>
-          
-          <button
-            onClick={() => addToCart(product)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-full transition-all duration-300 transform hover:scale-110 shadow-md"
-            aria-label="Ajouter au panier"
-          >
-            <ShoppingCart size={20} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+	const { addToCart } = useCart();
+	return (
+		<motion.div whileHover={{ y: -4 }} className="rounded-lg overflow-hidden bg-white border shadow-sm">
+			<Link to={`/produit/${product.id}`}>
+				<img src={product.image} alt={product.name} className="h-44 w-full object-cover" />
+			</Link>
+			<div className="p-4 space-y-2">
+				<Link to={`/produit/${product.id}`} className="block font-semibold text-[#2C3E50]">{product.name}</Link>
+				<div className="text-sm text-gray-600 line-clamp-2">{product.description}</div>
+				<div className="flex items-center justify-between pt-2">
+					<span className="text-lg font-bold text-[#3498DB]">{product.price.toLocaleString()} CFA</span>
+					<Button onClick={() => addToCart(product)} className="text-sm">Ajouter au panier</Button>
+				</div>
+			</div>
+		</motion.div>
+	);
 }
+
+

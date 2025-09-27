@@ -1,46 +1,31 @@
-import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import React from 'react';
 
 export default function Footer() {
-  return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4">CITIL</h3>
-            <p className="text-gray-300">Cabinet d’Ingénierie des Technologies et Innovation le Leader.</p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Liens rapides</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-white">Accueil</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white">Boutique</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white">Formations</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white">Projets</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Services</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-white">Robotique</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white">IA Appliquée</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white">Formation Arduino</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white">Vente de kits</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Suivez-nous</h4>
-            <div className="flex space-x-4">
-              <a href="#"><Facebook size={20} /></a>
-              <a href="#"><Twitter size={20} /></a>
-              <a href="#"><Instagram size={20} /></a>
-              <a href="#"><Linkedin size={20} /></a>
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          &copy; {new Date().getFullYear()} CITIL. Tous droits réservés.
-        </div>
-      </div>
-    </footer>
-  );
+	return (
+		<footer className="bg-[#2C3E50] text-white mt-auto">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid gap-8 md:grid-cols-3">
+				<div>
+					<h4 className="text-lg font-semibold mb-2">CITIL</h4>
+					<p className="text-sm opacity-80">Cabinet d’Ingénierie des Technologies et Innovation le Leader</p>
+				</div>
+				<div>
+					<h4 className="text-lg font-semibold mb-2">Contact</h4>
+					<p className="text-sm opacity-90">Lomé, Togo</p>
+					<p className="text-sm opacity-90">+228 90 01 38 02/91 12 05 00</p>
+					<p className="text-sm opacity-90">mpad.leadertech@gmail.com</p>
+				</div>
+				<div>
+					<h4 className="text-lg font-semibold mb-2">Suivez-nous</h4>
+					<div className="flex gap-3 opacity-90 text-sm">
+						<a href="#">Facebook</a>
+						<a href="#">Tiktok</a>
+						<a href="#">LinkedIn</a>
+					</div>
+				</div>
+			</div>
+			<div className="text-center text-xs py-4 bg-black/20">© {new Date().getFullYear()} CITIL. Tous droits réservés.</div>
+		</footer>
+	);
 }
+
+
