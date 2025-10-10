@@ -27,6 +27,7 @@ import Services from './pages/Services.jsx';
 import Contact from './pages/Contact.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import Profile from './pages/Profile.jsx';
 
 const PageWrapper = ({ children }) => (
 	<motion.main
@@ -76,6 +77,7 @@ export default function App() {
 						<Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
 						<Route path="/login" element={<Login />} />
 						<Route path="/register" element={<Register />} />
+						<Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 						<Route path="/contact" element={<Contact />} />
 						<Route path="/admin/*" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
 							<Route index element={<Navigate to="overview" replace />} />

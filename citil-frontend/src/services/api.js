@@ -235,21 +235,45 @@
 
 
 
-// DONNEES MOCKEES POUR MIEUX TESTER L INTERFACE
+// SERVICE API RÉEL POUR CONNEXION AVEC LARAVEL
 
-// import axios from 'axios';
+import axios from 'axios';
 
-// // La constante API_URL et l'instance 'api' ne sont plus utilisées dans la version moquée
-// // mais sont conservées ici pour référence.
-// const API_URL = 'http://localhost:8000';
-// const api = axios.create({
-//   baseURL: API_URL,
-//   withCredentials: true,
-//   headers: {
-//     'Accept': 'application/json',
-//     'Content-Type': 'application/json',
-//   },
-// });
+const API_URL = 'http://localhost:8000';
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+});
+
+// Intercepteur pour ajouter le token d'authentification
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('citil_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Intercepteur pour gérer les erreurs de réponse
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('citil_token');
+      window.dispatchEvent(new Event('authChanged'));
+    }
+    return Promise.reject(error);
+  }
+);
 
 // ----------------------------------------------------------------------
 // 1. FONCTIONS ET DONNÉES DE MOCK
@@ -319,48 +343,93 @@ let mockBlogCategories = [
 export const ApiService = {
     // --- AUTHENTIFICATION ---
     login: async (email, password) => {
-        await mockDelay(300);
-        // Simule un login réussi si c'est l'admin ou un client connu
-        if (email === 'admin@citil.tg' && password === 'password') {
-            localStorage.setItem('citil_token', 'mock_admin_token');
-            try { window.dispatchEvent(new Event('authChanged')); } catch {}
-            return { token: 'mock_admin_token', user: mockUsers.find(u => u.role === 'admin') };
-        } else if (email === 'kossi@example.com' && password === 'password') {
-            localStorage.setItem('citil_token', 'mock_client_token');
-            try { window.dispatchEvent(new Event('authChanged')); } catch {}
-            return { token: 'mock_client_token', user: mockUsers.find(u => u.role === 'client') };
+        try {
+            const response = await api.post('/api/login', { email, password });
+            const { token, user_info } = response.data;
+            
+            localStorage.setItem('citil_token', token);
+            localStorage.setItem('citil_user', JSON.stringify(user_info));
+            window.dispatchEvent(new Event('authChanged'));
+            
+            return { token, user: user_info };
+        } catch (error) {
+            const message = error.response?.data?.message || 'Erreur de connexion';
+            throw new Error(message);
         }
-        // Simuler une erreur pour les autres
-        throw new Error("Identifiants incorrects (Mock)");
     },
     
     register: async (name, email, password, password_confirmation) => {
-        await mockDelay(300);
-        const newId = mockUsers.length + 1;
-        const newUser = { id: newId, name, email, phone: null, role: 'client', createdAt: new Date().toISOString().slice(0, 10) };
-        mockUsers.push(newUser);
-        localStorage.setItem('citil_token', `mock_client_token_${newId}`);
-        try { window.dispatchEvent(new Event('authChanged')); } catch {}
-        return { token: `mock_client_token_${newId}`, user: newUser };
+        try {
+            const response = await api.post('/api/register', { 
+                name, 
+                email, 
+                password, 
+                password_confirmation 
+            });
+            const { token, user_info } = response.data;
+            
+            localStorage.setItem('citil_token', token);
+            localStorage.setItem('citil_user', JSON.stringify(user_info));
+            window.dispatchEvent(new Event('authChanged'));
+            
+            return { token, user: user_info };
+        } catch (error) {
+            const message = error.response?.data?.message || 'Erreur d\'inscription';
+            throw new Error(message);
+        }
     },
 
     logout: async () => {
-        await mockDelay(100);
-        localStorage.removeItem('citil_token');
-        try { window.dispatchEvent(new Event('authChanged')); } catch {}
+        try {
+            await api.post('/api/logout');
+        } catch (error) {
+            console.error('Erreur lors de la déconnexion:', error);
+        } finally {
+            localStorage.removeItem('citil_token');
+            localStorage.removeItem('citil_user');
+            window.dispatchEvent(new Event('authChanged'));
+        }
         return true;
+    },
+
+    updateProfile: async (profileData) => {
+        try {
+            const response = await api.put('/api/profile', profileData);
+            const { user_info } = response.data;
+            
+            // Mettre à jour les données utilisateur dans le localStorage
+            localStorage.setItem('citil_user', JSON.stringify(user_info));
+            window.dispatchEvent(new Event('authChanged'));
+            
+            return response.data;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Erreur lors de la mise à jour du profil';
+            throw new Error(message);
+        }
     },
 
     // --- PRODUITS ---
     getProducts: async () => {
-        await mockDelay();
-        return mockProducts;
+        try {
+            const response = await api.get('/api/products');
+            return response.data;
+        } catch (error) {
+            console.error('Erreur lors de la récupération des produits:', error);
+            // Fallback vers les données mockées en cas d'erreur
+            return mockProducts;
+        }
     },
     getProduct: async (id) => {
-        await mockDelay();
-        const product = mockProducts.find(p => p.id === Number(id));
-        if (!product) throw new Error('Produit non trouvé (Mock)');
-        return product;
+        try {
+            const response = await api.get(`/api/products/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Erreur lors de la récupération du produit:', error);
+            // Fallback vers les données mockées en cas d'erreur
+            const product = mockProducts.find(p => p.id === Number(id));
+            if (!product) throw new Error('Produit non trouvé');
+            return product;
+        }
     },
     createProduct: async (product) => {
         await mockDelay();

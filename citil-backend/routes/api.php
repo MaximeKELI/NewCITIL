@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\API\AuthController; 
+use App\Http\Controllers\Api\AuthController; 
 use Illuminate\Support\Facades\Route;
 //use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
@@ -37,7 +37,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logOut']);
     Route::get('/get-user', [AuthController::class, 'userInfo']);
-
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
 });    
 
 

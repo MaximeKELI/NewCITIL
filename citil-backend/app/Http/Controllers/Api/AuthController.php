@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -21,19 +21,31 @@ class AuthController extends Controller
             $validated = $request->validate([
                 'name'     => 'required|string|min:4',
                 'email'    => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8',
+                'password' => 'required|string|min:8|confirmed',
             ]);
 
             $user = User::create([
                 'name'     => $validated['name'],
                 'email'    => $validated['email'],
                 'password' => Hash::make($validated['password']),
+                'role'     => 'client',
             ]);
+
+            // Créer un token pour l'utilisateur nouvellement inscrit
+            $token = $user->createToken('authToken')->plainTextToken;
 
             return response()->json([
                 'response_code' => 201,
                 'status'        => 'success',
                 'message'       => 'Inscription réussie !',
+                'user_info'     => [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
+                    'role'  => $user->role,
+                ],
+                'token'       => $token,
+                'token_type'  => 'Bearer',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -78,11 +90,12 @@ class AuthController extends Controller
             return response()->json([
                 'response_code' => 200,
                 'status'        => 'success',
-                'message'       => 'Connexon réussie !',
+                'message'       => 'Connexion réussie !',
                 'user_info'     => [
                     'id'    => $user->id,
                     'name'  => $user->name,
                     'email' => $user->email,
+                    'role'  => $user->role,
                 ],
                 'token'       => $token,
                 'token_type'  => 'Bearer',
@@ -106,26 +119,110 @@ class AuthController extends Controller
     }
 
     /**
-     * Get list of users (paginated) — protected route.
+     * Get current user info — protected route.
      */
-    public function userInfo()
+    public function userInfo(Request $request)
     {
         try {
-            $users = User::latest()->paginate(10);
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json([
+                    'response_code' => 401,
+                    'status'        => 'error',
+                    'message'       => 'Utilisateur non authentifié',
+                ], 401);
+            }
 
             return response()->json([
-                'response_code'  => 200,
-                'status'         => 'success',
-                'message'        => 'Liste des utilisateurs récupérée avec succès',
-                'data_user_list' => $users,
+                'response_code' => 200,
+                'status'        => 'success',
+                'message'       => 'Informations utilisateur récupérées avec succès',
+                'user_info'     => [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
+                    'role'  => $user->role,
+                ],
             ]);
         } catch (\Exception $e) {
-            Log::error('User List Error: ' . $e->getMessage());
+            Log::error('User Info Error: ' . $e->getMessage());
 
             return response()->json([
                 'response_code' => 500,
                 'status'        => 'error',
-                'message'       => 'Échec de la récupération de la liste des utilisateurs',
+                'message'       => 'Échec de la récupération des informations utilisateur',
+            ], 500);
+        }
+    }
+
+    /**
+     * Update user profile — protected route.
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            $validated = $request->validate([
+                'name' => 'sometimes|string|min:2|max:255',
+                'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+                'phone' => 'sometimes|nullable|string|max:20',
+                'current_password' => 'required_with:new_password',
+                'new_password' => 'sometimes|string|min:8|confirmed',
+            ]);
+
+            // Update basic info
+            if (isset($validated['name'])) {
+                $user->name = $validated['name'];
+            }
+            if (isset($validated['email'])) {
+                $user->email = $validated['email'];
+            }
+            if (isset($validated['phone'])) {
+                $user->phone = $validated['phone'];
+            }
+
+            // Update password if provided
+            if (isset($validated['new_password'])) {
+                if (!Hash::check($validated['current_password'], $user->password)) {
+                    return response()->json([
+                        'response_code' => 400,
+                        'status' => 'error',
+                        'message' => 'Le mot de passe actuel est incorrect',
+                    ], 400);
+                }
+                $user->password = Hash::make($validated['new_password']);
+            }
+
+            $user->save();
+
+            return response()->json([
+                'response_code' => 200,
+                'status' => 'success',
+                'message' => 'Profil mis à jour avec succès',
+                'user_info' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'role' => $user->role,
+                ],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'response_code' => 422,
+                'status' => 'error',
+                'message' => 'Données invalides',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Profile Update Error: ' . $e->getMessage());
+
+            return response()->json([
+                'response_code' => 500,
+                'status' => 'error',
+                'message' => 'Erreur lors de la mise à jour du profil',
             ], 500);
         }
     }

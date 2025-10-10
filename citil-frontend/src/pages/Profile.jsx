@@ -1,0 +1,404 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { ApiService } from '../services/api.js';
+
+export default function Profile() {
+	const [user, setUser] = useState(null);
+	const [loading, setLoading] = useState(true);
+	const [editing, setEditing] = useState(false);
+	const [formData, setFormData] = useState({
+		name: '',
+		email: '',
+		phone: '',
+		currentPassword: '',
+		newPassword: '',
+		confirmPassword: ''
+	});
+	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
+
+	useEffect(() => {
+		const loadUser = () => {
+			const userData = localStorage.getItem('citil_user');
+			if (userData) {
+				const userInfo = JSON.parse(userData);
+				setUser(userInfo);
+				setFormData({
+					name: userInfo.name || '',
+					email: userInfo.email || '',
+					phone: userInfo.phone || '',
+					currentPassword: '',
+					newPassword: '',
+					confirmPassword: ''
+				});
+			}
+			setLoading(false);
+		};
+		loadUser();
+	}, []);
+
+	const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setFormData(prev => ({
+			...prev,
+			[name]: value
+		}));
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		setError('');
+		setSuccess('');
+
+		if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+			setError('Les nouveaux mots de passe ne correspondent pas');
+			return;
+		}
+
+		try {
+			const updateData = {
+				name: formData.name,
+				email: formData.email,
+				phone: formData.phone,
+			};
+
+			// Ajouter les données de mot de passe seulement si un nouveau mot de passe est fourni
+			if (formData.newPassword) {
+				updateData.current_password = formData.currentPassword;
+				updateData.new_password = formData.newPassword;
+				updateData.new_password_confirmation = formData.confirmPassword;
+			}
+
+			await ApiService.updateProfile(updateData);
+			setSuccess('Profil mis à jour avec succès !');
+			setEditing(false);
+			
+			// Mettre à jour les données utilisateur locales
+			const updatedUser = { ...user, ...updateData };
+			setUser(updatedUser);
+		} catch (err) {
+			setError(err.message || 'Erreur lors de la mise à jour du profil');
+		}
+	};
+
+	if (loading) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-[#F9F9EA] to-white flex items-center justify-center">
+				<motion.div
+					animate={{ rotate: 360 }}
+					transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+					className="w-12 h-12 border-4 border-[#3498DB] border-t-transparent rounded-full"
+				/>
+			</div>
+		);
+	}
+
+	if (!user) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-[#F9F9EA] to-white flex items-center justify-center">
+				<div className="text-center">
+					<h1 className="text-2xl font-bold text-[#2C3E50] mb-4">Utilisateur non trouvé</h1>
+					<p className="text-gray-600">Veuillez vous reconnecter.</p>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="min-h-screen bg-gradient-to-br from-[#F9F9EA] to-white py-12">
+			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+				{/* Header */}
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.6 }}
+					className="text-center mb-12"
+				>
+					<div className="relative inline-block">
+						<motion.div
+							initial={{ scale: 0 }}
+							animate={{ scale: 1 }}
+							transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+							className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-[#3498DB] to-[#2980B9] flex items-center justify-center text-white text-4xl font-bold shadow-2xl"
+						>
+							{user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+						</motion.div>
+						<motion.div
+							initial={{ scale: 0 }}
+							animate={{ scale: 1 }}
+							transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+							className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#2ECC71] rounded-full flex items-center justify-center"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
+								<path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+							</svg>
+						</motion.div>
+					</div>
+					<motion.h1
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: 0.3, duration: 0.6 }}
+						className="text-4xl font-bold text-[#2C3E50] mt-6 mb-2"
+					>
+						{user.name}
+					</motion.h1>
+					<motion.p
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: 0.4, duration: 0.6 }}
+						className="text-lg text-gray-600 mb-4"
+					>
+						{user.email}
+					</motion.p>
+					{user.role === 'admin' && (
+						<motion.span
+							initial={{ opacity: 0, scale: 0 }}
+							animate={{ opacity: 1, scale: 1 }}
+							transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+							className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-[#3498DB] to-[#2980B9] text-white shadow-lg"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-2">
+								<path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z" clipRule="evenodd" />
+							</svg>
+							Administrateur
+						</motion.span>
+					)}
+				</motion.div>
+
+				{/* Profile Form */}
+				<motion.div
+					initial={{ opacity: 0, y: 40 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.6, duration: 0.6 }}
+					className="bg-white rounded-2xl shadow-xl p-8"
+				>
+					<div className="flex items-center justify-between mb-8">
+						<h2 className="text-2xl font-bold text-[#2C3E50]">
+							Informations du profil
+						</h2>
+						<motion.button
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							onClick={() => setEditing(!editing)}
+							className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+								editing 
+									? 'bg-gray-500 text-white hover:bg-gray-600' 
+									: 'bg-gradient-to-r from-[#3498DB] to-[#2980B9] text-white hover:from-[#2980B9] hover:to-[#1F6A97]'
+							}`}
+						>
+							{editing ? 'Annuler' : 'Modifier le profil'}
+						</motion.button>
+					</div>
+
+					{error && (
+						<motion.div
+							initial={{ opacity: 0, y: -10 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+						>
+							{error}
+						</motion.div>
+					)}
+
+					{success && (
+						<motion.div
+							initial={{ opacity: 0, y: -10 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700"
+						>
+							{success}
+						</motion.div>
+					)}
+
+					<form onSubmit={handleSubmit} className="space-y-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Nom complet
+								</label>
+								<input
+									type="text"
+									name="name"
+									value={formData.name}
+									onChange={handleInputChange}
+									disabled={!editing}
+									className={`w-full px-4 py-3 rounded-lg border transition-all duration-200 ${
+										editing 
+											? 'border-gray-300 focus:border-[#3498DB] focus:ring-2 focus:ring-[#3498DB]/20' 
+											: 'border-gray-200 bg-gray-50'
+									}`}
+								/>
+							</div>
+
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Email
+								</label>
+								<input
+									type="email"
+									name="email"
+									value={formData.email}
+									onChange={handleInputChange}
+									disabled={!editing}
+									className={`w-full px-4 py-3 rounded-lg border transition-all duration-200 ${
+										editing 
+											? 'border-gray-300 focus:border-[#3498DB] focus:ring-2 focus:ring-[#3498DB]/20' 
+											: 'border-gray-200 bg-gray-50'
+									}`}
+								/>
+							</div>
+
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Téléphone
+								</label>
+								<input
+									type="tel"
+									name="phone"
+									value={formData.phone}
+									onChange={handleInputChange}
+									disabled={!editing}
+									className={`w-full px-4 py-3 rounded-lg border transition-all duration-200 ${
+										editing 
+											? 'border-gray-300 focus:border-[#3498DB] focus:ring-2 focus:ring-[#3498DB]/20' 
+											: 'border-gray-200 bg-gray-50'
+									}`}
+								/>
+							</div>
+
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Rôle
+								</label>
+								<input
+									type="text"
+									value={user.role === 'admin' ? 'Administrateur' : 'Client'}
+									disabled
+									className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-500"
+								/>
+							</div>
+						</div>
+
+						{editing && (
+							<motion.div
+								initial={{ opacity: 0, height: 0 }}
+								animate={{ opacity: 1, height: 'auto' }}
+								exit={{ opacity: 0, height: 0 }}
+								transition={{ duration: 0.3 }}
+								className="border-t pt-6"
+							>
+								<h3 className="text-lg font-semibold text-[#2C3E50] mb-4">Changer le mot de passe</h3>
+								<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+									<div>
+										<label className="block text-sm font-medium text-gray-700 mb-2">
+											Mot de passe actuel
+										</label>
+										<input
+											type="password"
+											name="currentPassword"
+											value={formData.currentPassword}
+											onChange={handleInputChange}
+											className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#3498DB] focus:ring-2 focus:ring-[#3498DB]/20 transition-all duration-200"
+										/>
+									</div>
+
+									<div>
+										<label className="block text-sm font-medium text-gray-700 mb-2">
+											Nouveau mot de passe
+										</label>
+										<input
+											type="password"
+											name="newPassword"
+											value={formData.newPassword}
+											onChange={handleInputChange}
+											className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#3498DB] focus:ring-2 focus:ring-[#3498DB]/20 transition-all duration-200"
+										/>
+									</div>
+
+									<div>
+										<label className="block text-sm font-medium text-gray-700 mb-2">
+											Confirmer le mot de passe
+										</label>
+										<input
+											type="password"
+											name="confirmPassword"
+											value={formData.confirmPassword}
+											onChange={handleInputChange}
+											className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#3498DB] focus:ring-2 focus:ring-[#3498DB]/20 transition-all duration-200"
+										/>
+									</div>
+								</div>
+							</motion.div>
+						)}
+
+						{editing && (
+							<motion.div
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: 0.2 }}
+								className="flex justify-end pt-6"
+							>
+								<motion.button
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
+									type="submit"
+									className="px-8 py-3 bg-gradient-to-r from-[#2ECC71] to-[#27AE60] text-white font-semibold rounded-lg hover:from-[#27AE60] hover:to-[#229954] transition-all duration-200 shadow-lg"
+								>
+									Sauvegarder les modifications
+								</motion.button>
+							</motion.div>
+						)}
+					</form>
+				</motion.div>
+
+				{/* Stats Cards */}
+				<motion.div
+					initial={{ opacity: 0, y: 40 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.8, duration: 0.6 }}
+					className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8"
+				>
+					<motion.div
+						whileHover={{ y: -5 }}
+						className="bg-white rounded-xl shadow-lg p-6 text-center"
+					>
+						<div className="w-12 h-12 bg-gradient-to-br from-[#3498DB] to-[#2980B9] rounded-full flex items-center justify-center mx-auto mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+								<path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.318.114.362.278l2.558 9.64a.75.75 0 0 0 .706.522H17.25a.75.75 0 0 0 0-1.5H7.5l-.5-1.5h10.5a.75.75 0 0 0 .706-.522l2.558-9.64a.75.75 0 0 0-.362-.278H2.25Z" />
+								<path d="M3.75 20.25a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0ZM12.75 20.25a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z" />
+							</svg>
+						</div>
+						<h3 className="text-2xl font-bold text-[#2C3E50]">0</h3>
+						<p className="text-gray-600">Commandes</p>
+					</motion.div>
+
+					<motion.div
+						whileHover={{ y: -5 }}
+						className="bg-white rounded-xl shadow-lg p-6 text-center"
+					>
+						<div className="w-12 h-12 bg-gradient-to-br from-[#2ECC71] to-[#27AE60] rounded-full flex items-center justify-center mx-auto mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+								<path fillRule="evenodd" d="M12 2.25a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM3.75 20.1a8.25 8.25 0 1 1 16.5 0 .9.9 0 0 1-.9.9H4.65a.9.9 0 0 1-.9-.9Z" clipRule="evenodd" />
+							</svg>
+						</div>
+						<h3 className="text-2xl font-bold text-[#2C3E50]">0</h3>
+						<p className="text-gray-600">Formations suivies</p>
+					</motion.div>
+
+					<motion.div
+						whileHover={{ y: -5 }}
+						className="bg-white rounded-xl shadow-lg p-6 text-center"
+					>
+						<div className="w-12 h-12 bg-gradient-to-br from-[#F1C40F] to-[#E67E22] rounded-full flex items-center justify-center mx-auto mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+								<path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clipRule="evenodd" />
+							</svg>
+						</div>
+						<h3 className="text-2xl font-bold text-[#2C3E50]">0</h3>
+						<p className="text-gray-600">Points de fidélité</p>
+					</motion.div>
+				</motion.div>
+			</div>
+		</div>
+	);
+}

@@ -7,6 +7,7 @@ export default function Register() {
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [passwordConfirmation, setPasswordConfirmation] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 
@@ -14,8 +15,15 @@ export default function Register() {
 		e.preventDefault();
 		setError('');
 		setLoading(true);
+		
+		if (password !== passwordConfirmation) {
+			setError('Les mots de passe ne correspondent pas');
+			setLoading(false);
+			return;
+		}
+		
 		try {
-			await ApiService.register(name, email, password);
+			await ApiService.register(name, email, password, passwordConfirmation);
 			navigate('/');
 		} catch (err) {
 			setError(err.message || 'Erreur d\'inscription');
@@ -40,6 +48,10 @@ export default function Register() {
 				<div>
 					<label className="block text-sm mb-1">Mot de passe</label>
 					<input type="password" className="w-full border rounded px-3 py-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
+				</div>
+				<div>
+					<label className="block text-sm mb-1">Confirmer le mot de passe</label>
+					<input type="password" className="w-full border rounded px-3 py-2" value={passwordConfirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} required />
 				</div>
 				<button type="submit" disabled={loading} className="w-full bg-[#2980B9] text-white py-2 rounded hover:bg-[#1F6A97]">
 					{loading ? 'Création…' : 'Créer le compte'}
