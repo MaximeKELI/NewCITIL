@@ -394,7 +394,28 @@ export const ApiService = {
 
     updateProfile: async (profileData) => {
         try {
-            const response = await api.put('/api/profile', profileData);
+            // Créer FormData pour gérer les fichiers
+            const formData = new FormData();
+            
+            // Ajouter les champs texte
+            if (profileData.name) formData.append('name', profileData.name);
+            if (profileData.email) formData.append('email', profileData.email);
+            if (profileData.phone) formData.append('phone', profileData.phone);
+            if (profileData.current_password) formData.append('current_password', profileData.current_password);
+            if (profileData.new_password) formData.append('new_password', profileData.new_password);
+            if (profileData.new_password_confirmation) formData.append('new_password_confirmation', profileData.new_password_confirmation);
+            
+            // Ajouter le fichier avatar s'il existe
+            if (profileData.avatar) {
+                formData.append('avatar', profileData.avatar);
+            }
+            
+            const response = await api.put('/api/profile', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
             const { user_info } = response.data;
             
             // Mettre à jour les données utilisateur dans le localStorage

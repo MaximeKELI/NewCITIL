@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 
@@ -39,10 +40,12 @@ class AuthController extends Controller
                 'status'        => 'success',
                 'message'       => 'Inscription réussie !',
                 'user_info'     => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
-                    'email' => $user->email,
-                    'role'  => $user->role,
+                    'id'     => $user->id,
+                    'name'   => $user->name,
+                    'email'  => $user->email,
+                    'phone'  => $user->phone,
+                    'avatar' => $user->avatar ? Storage::url('avatars/' . $user->avatar) : null,
+                    'role'   => $user->role,
                 ],
                 'token'       => $token,
                 'token_type'  => 'Bearer',
@@ -92,10 +95,12 @@ class AuthController extends Controller
                 'status'        => 'success',
                 'message'       => 'Connexion réussie !',
                 'user_info'     => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
-                    'email' => $user->email,
-                    'role'  => $user->role,
+                    'id'     => $user->id,
+                    'name'   => $user->name,
+                    'email'  => $user->email,
+                    'phone'  => $user->phone,
+                    'avatar' => $user->avatar ? Storage::url('avatars/' . $user->avatar) : null,
+                    'role'   => $user->role,
                 ],
                 'token'       => $token,
                 'token_type'  => 'Bearer',
@@ -139,10 +144,12 @@ class AuthController extends Controller
                 'status'        => 'success',
                 'message'       => 'Informations utilisateur récupérées avec succès',
                 'user_info'     => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
-                    'email' => $user->email,
-                    'role'  => $user->role,
+                    'id'     => $user->id,
+                    'name'   => $user->name,
+                    'email'  => $user->email,
+                    'phone'  => $user->phone,
+                    'avatar' => $user->avatar ? Storage::url('avatars/' . $user->avatar) : null,
+                    'role'   => $user->role,
                 ],
             ]);
         } catch (\Exception $e) {
@@ -168,6 +175,7 @@ class AuthController extends Controller
                 'name' => 'sometimes|string|min:2|max:255',
                 'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
                 'phone' => 'sometimes|nullable|string|max:20',
+                'avatar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'current_password' => 'required_with:new_password',
                 'new_password' => 'sometimes|string|min:8|confirmed',
             ]);
@@ -181,6 +189,20 @@ class AuthController extends Controller
             }
             if (isset($validated['phone'])) {
                 $user->phone = $validated['phone'];
+            }
+
+            // Update avatar if provided
+            if ($request->hasFile('avatar')) {
+                // Supprimer l'ancien avatar s'il existe
+                if ($user->avatar && Storage::exists('avatars/' . $user->avatar)) {
+                    Storage::delete('avatars/' . $user->avatar);
+                }
+                
+                // Stocker le nouvel avatar
+                $avatarFile = $request->file('avatar');
+                $avatarName = time() . '_' . $user->id . '.' . $avatarFile->getClientOriginalExtension();
+                $avatarFile->storeAs('avatars', $avatarName);
+                $user->avatar = $avatarName;
             }
 
             // Update password if provided
@@ -206,6 +228,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone' => $user->phone,
+                    'avatar' => $user->avatar ? Storage::url('avatars/' . $user->avatar) : null,
                     'role' => $user->role,
                 ],
             ]);

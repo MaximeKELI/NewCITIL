@@ -82,8 +82,16 @@ export default function Navbar() {
 									className="px-3 py-2 rounded-md text-sm font-medium text-[#2C3E50] hover:text-white hover:bg-[#2980B9] flex items-center gap-2 transition-all duration-200"
 									aria-label="Menu profil"
 								>
-									<div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#3498DB] to-[#2980B9] flex items-center justify-center text-white font-semibold text-sm">
-										{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+									<div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#3498DB] to-[#2980B9] flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+										{user?.avatar ? (
+											<img 
+												src={user.avatar} 
+												alt="Avatar" 
+												className="w-full h-full object-cover"
+											/>
+										) : (
+											user?.name ? user.name.charAt(0).toUpperCase() : 'U'
+										)}
 									</div>
 									<span className="hidden sm:block">{user?.name || 'Utilisateur'}</span>
 									<motion.svg 

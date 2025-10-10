@@ -14,6 +14,8 @@ export default function Profile() {
 		newPassword: '',
 		confirmPassword: ''
 	});
+	const [avatarFile, setAvatarFile] = useState(null);
+	const [avatarPreview, setAvatarPreview] = useState(null);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
 
@@ -31,6 +33,7 @@ export default function Profile() {
 					newPassword: '',
 					confirmPassword: ''
 				});
+				setAvatarPreview(userInfo.avatar || null);
 			}
 			setLoading(false);
 		};
@@ -43,6 +46,32 @@ export default function Profile() {
 			...prev,
 			[name]: value
 		}));
+	};
+
+	const handleAvatarChange = (e) => {
+		const file = e.target.files[0];
+		if (file) {
+			// Vérifier la taille du fichier (max 2MB)
+			if (file.size > 2 * 1024 * 1024) {
+				setError('La taille du fichier ne doit pas dépasser 2MB');
+				return;
+			}
+			
+			// Vérifier le type de fichier
+			if (!file.type.startsWith('image/')) {
+				setError('Veuillez sélectionner un fichier image valide');
+				return;
+			}
+			
+			setAvatarFile(file);
+			
+			// Créer un aperçu de l'image
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				setAvatarPreview(e.target.result);
+			};
+			reader.readAsDataURL(file);
+		}
 	};
 
 	const handleSubmit = async (e) => {
@@ -67,6 +96,11 @@ export default function Profile() {
 				updateData.current_password = formData.currentPassword;
 				updateData.new_password = formData.newPassword;
 				updateData.new_password_confirmation = formData.confirmPassword;
+			}
+
+			// Ajouter l'avatar s'il a été sélectionné
+			if (avatarFile) {
+				updateData.avatar = avatarFile;
 			}
 
 			await ApiService.updateProfile(updateData);
@@ -119,9 +153,17 @@ export default function Profile() {
 							initial={{ scale: 0 }}
 							animate={{ scale: 1 }}
 							transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-							className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-[#3498DB] to-[#2980B9] flex items-center justify-center text-white text-4xl font-bold shadow-2xl"
+							className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-[#3498DB] to-[#2980B9] flex items-center justify-center text-white text-4xl font-bold shadow-2xl overflow-hidden"
 						>
-							{user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+							{avatarPreview ? (
+								<img 
+									src={avatarPreview} 
+									alt="Avatar" 
+									className="w-full h-full object-cover"
+								/>
+							) : (
+								user.name ? user.name.charAt(0).toUpperCase() : 'U'
+							)}
 						</motion.div>
 						<motion.div
 							initial={{ scale: 0 }}
@@ -211,6 +253,41 @@ export default function Profile() {
 					)}
 
 					<form onSubmit={handleSubmit} className="space-y-6">
+						{/* Champ Avatar */}
+						<div className="text-center">
+							<label className="block text-sm font-medium text-gray-700 mb-4">
+								Photo de profil
+							</label>
+							<div className="flex flex-col items-center space-y-4">
+								<div className="relative">
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleAvatarChange}
+										disabled={!editing}
+										className="hidden"
+										id="avatar-upload"
+									/>
+									<label
+										htmlFor="avatar-upload"
+										className={`cursor-pointer inline-flex items-center px-4 py-2 rounded-lg border-2 border-dashed transition-all duration-200 ${
+											editing
+												? 'border-[#3498DB] text-[#3498DB] hover:bg-[#3498DB]/5'
+												: 'border-gray-300 text-gray-400 cursor-not-allowed'
+										}`}
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
+											<path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0 0 21 18v-1.94l-4.03-4.03a1.5 1.5 0 0 0-2.122 0l-5.06 5.061a1.5 1.5 0 0 1-2.122 0L3 16.061Zm10.125-7.81a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Z" clipRule="evenodd" />
+										</svg>
+										{avatarFile ? 'Changer la photo' : 'Choisir une photo'}
+									</label>
+								</div>
+								<p className="text-xs text-gray-500">
+									Formats acceptés: JPG, PNG, GIF (max 2MB)
+								</p>
+							</div>
+						</div>
+
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div>
 								<label className="block text-sm font-medium text-gray-700 mb-2">
