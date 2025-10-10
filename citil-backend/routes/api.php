@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\API\AuthController; 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
+//use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TrainingController;
@@ -19,9 +20,25 @@ use App\Http\Controllers\Api\InternshipApplicationController;
 */
 
 
-//Authentification
+// //Authentification
+// Route::post('/login', [AuthController::class, 'login']);
+// Route::post('/register', [AuthController::class, 'register']);
+// Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+
+
+//New authentication routes
+
+
+// Authentification
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+
+// Protégées
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logOut']);
+    Route::get('/get-user', [AuthController::class, 'userInfo']);
+
+});    
 
 
 // Liste des produits (lecture seule pour la boutique)
