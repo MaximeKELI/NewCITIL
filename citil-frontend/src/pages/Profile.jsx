@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext.js';
 import { ApiService } from '../services/api.js';
+import { getAvatarUrl } from '../utils/avatarUtils.js';
 
 export default function Profile() {
+	const { user: authUser, logout: authLogout } = useAuth();
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [editing, setEditing] = useState(false);
@@ -20,25 +23,61 @@ export default function Profile() {
 	const [success, setSuccess] = useState('');
 
 	useEffect(() => {
-		const loadUser = () => {
-			const userData = localStorage.getItem('citil_user');
-			if (userData) {
-				const userInfo = JSON.parse(userData);
-				setUser(userInfo);
-				setFormData({
-					name: userInfo.name || '',
-					email: userInfo.email || '',
-					phone: userInfo.phone || '',
-					currentPassword: '',
-					newPassword: '',
-					confirmPassword: ''
-				});
-				setAvatarPreview(userInfo.avatar || null);
+		const loadUser = async () => {
+			try {
+				// Utiliser les données de l'AuthContext d'abord
+				if (authUser) {
+					setUser(authUser);
+					setFormData({
+						name: authUser.name || '',
+						email: authUser.email || '',
+						phone: authUser.phone || '',
+						currentPassword: '',
+						newPassword: '',
+						confirmPassword: ''
+					});
+					setAvatarPreview(getAvatarUrl(authUser.avatar));
+					setLoading(false);
+					return;
+				}
+
+				// Fallback vers l'API si pas de données dans le contexte
+				const response = await ApiService.getUserInfo();
+				if (response.user_info) {
+					const userInfo = response.user_info;
+					setUser(userInfo);
+					setFormData({
+						name: userInfo.name || '',
+						email: userInfo.email || '',
+						phone: userInfo.phone || '',
+						currentPassword: '',
+						newPassword: '',
+						confirmPassword: ''
+					});
+					setAvatarPreview(getAvatarUrl(userInfo.avatar));
+				}
+			} catch (error) {
+				console.error('Erreur lors du chargement du profil:', error);
+				// Fallback vers localStorage si l'API échoue
+				const userData = localStorage.getItem('citil_user');
+				if (userData) {
+					const userInfo = JSON.parse(userData);
+					setUser(userInfo);
+					setFormData({
+						name: userInfo.name || '',
+						email: userInfo.email || '',
+						phone: userInfo.phone || '',
+						currentPassword: '',
+						newPassword: '',
+						confirmPassword: ''
+					});
+					setAvatarPreview(getAvatarUrl(userInfo.avatar));
+				}
 			}
 			setLoading(false);
 		};
 		loadUser();
-	}, []);
+	}, [authUser]);
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -103,15 +142,32 @@ export default function Profile() {
 				updateData.avatar = avatarFile;
 			}
 
-			await ApiService.updateProfile(updateData);
+			const response = await ApiService.updateProfile(updateData);
 			setSuccess('Profil mis à jour avec succès !');
 			setEditing(false);
 			
-			// Mettre à jour les données utilisateur locales
-			const updatedUser = { ...user, ...updateData };
-			setUser(updatedUser);
+			// Mettre à jour les données utilisateur locales avec la réponse de l'API
+			const updatedUserInfo = response.user_info;
+			
+			// Mettre à jour le state local
+			setUser(updatedUserInfo);
+			
+			// Réinitialiser l'avatar preview avec l'URL de l'avatar sauvegardé
+			setAvatarPreview(getAvatarUrl(updatedUserInfo.avatar));
+			
+			// Réinitialiser le fichier avatar
+			setAvatarFile(null);
 		} catch (err) {
 			setError(err.message || 'Erreur lors de la mise à jour du profil');
+		}
+	};
+
+	const handleLogout = async () => {
+		try {
+			await authLogout();
+			// La redirection sera gérée par le ProtectedRoute
+		} catch (err) {
+			console.error('Erreur lors de la déconnexion:', err);
 		}
 	};
 
@@ -218,18 +274,28 @@ export default function Profile() {
 						<h2 className="text-2xl font-bold text-[#2C3E50]">
 							Informations du profil
 						</h2>
-						<motion.button
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={() => setEditing(!editing)}
-							className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-								editing 
-									? 'bg-gray-500 text-white hover:bg-gray-600' 
-									: 'bg-gradient-to-r from-[#3498DB] to-[#2980B9] text-white hover:from-[#2980B9] hover:to-[#1F6A97]'
-							}`}
-						>
-							{editing ? 'Annuler' : 'Modifier le profil'}
-						</motion.button>
+						<div className="flex gap-3">
+							<motion.button
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								onClick={() => setEditing(!editing)}
+								className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+									editing 
+										? 'bg-gray-500 text-white hover:bg-gray-600' 
+										: 'bg-gradient-to-r from-[#3498DB] to-[#2980B9] text-white hover:from-[#2980B9] hover:to-[#1F6A97]'
+								}`}
+							>
+								{editing ? 'Annuler' : 'Modifier le profil'}
+							</motion.button>
+							<motion.button
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								onClick={handleLogout}
+								className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 bg-red-500 text-white hover:bg-red-600"
+							>
+								Déconnexion
+							</motion.button>
+						</div>
 					</div>
 
 					{error && (

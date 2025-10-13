@@ -1,6 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { AuthProvider, useAuth } from './context/AuthContext.js';
+import './styles/responsive.css';
+import DebugAuth from './components/DebugAuth.jsx';
+import AdminTestButton from './components/AdminTestButton.jsx';
+import ResponsiveTest from './components/ResponsiveTest.jsx';
+import ResponsiveDemo from './components/ResponsiveDemo.jsx';
 
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
@@ -11,6 +17,7 @@ import ProductDetail from './pages/ProductDetail.jsx';
 import Trainings from './pages/Trainings.jsx';
 import Blog from './pages/Blog.jsx';
 import Stages from './pages/Stages.jsx';
+import AdminLogin from './pages/AdminLogin.jsx';
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import Overview from './pages/admin/Overview.jsx';
 import Stats from './pages/admin/Stats.jsx';
@@ -41,14 +48,44 @@ const PageWrapper = ({ children }) => (
 	</motion.main>
 );
 
-const ProtectedRoute = ({ children }) => {
-	const [isAuthed, setIsAuthed] = useState(!!localStorage.getItem('citil_token'));
-	useEffect(() => {
-		const onAuth = () => setIsAuthed(!!localStorage.getItem('citil_token'));
-		window.addEventListener('authChanged', onAuth);
-		return () => window.removeEventListener('authChanged', onAuth);
-	}, []);
-	return isAuthed ? children : <Navigate to="/login" replace />;
+const ProtectedRoute = ({ children, requireAdmin = false }) => {
+	const { user, loading } = useAuth();
+	
+	console.log('ProtectedRoute - Loading:', loading, 'User:', user, 'RequireAdmin:', requireAdmin);
+	
+	if (loading) {
+		console.log('ProtectedRoute - En cours de chargement...');
+		return (
+			<div className="min-h-screen bg-[#F9F9EA] flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2980B9] mx-auto"></div>
+					<p className="mt-4 text-[#2C3E50]">Chargement...</p>
+				</div>
+			</div>
+		);
+	}
+	
+	if (!user) {
+		console.log('ProtectedRoute - Aucun utilisateur, redirection vers login');
+		return <Navigate to="/login" replace />;
+	}
+	
+	if (requireAdmin && user.role !== 'admin') {
+		console.log('ProtectedRoute - Utilisateur non admin, rôle:', user.role);
+		return (
+			<div className="min-h-screen bg-[#F9F9EA] flex items-center justify-center">
+				<div className="text-center">
+					<h1 className="text-2xl font-bold text-red-600 mb-4">Accès Refusé</h1>
+					<p className="text-[#2C3E50] mb-4">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+					<p className="text-sm text-gray-500">Rôle actuel: {user.role}</p>
+					<Navigate to="/" replace />
+				</div>
+			</div>
+		);
+	}
+	
+	console.log('ProtectedRoute - Accès autorisé');
+	return children;
 };
 
 const ScrollToTop = () => {
@@ -57,10 +94,14 @@ const ScrollToTop = () => {
 	return null;
 };
 
-export default function App() {
+function AppContent() {
 	const location = useLocation();
 	return (
 		<div className="flex min-h-screen flex-col">
+			<DebugAuth />
+			<AdminTestButton />
+			<ResponsiveTest />
+			<ResponsiveDemo />
 			<Navbar />
 			<ScrollToTop />
 			<AnimatePresence mode="wait">
@@ -79,7 +120,9 @@ export default function App() {
 						<Route path="/register" element={<Register />} />
 						<Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 						<Route path="/contact" element={<Contact />} />
-						<Route path="/admin/*" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+						{/* Routes admin séparées */}
+						<Route path="/admin-login" element={<AdminLogin />} />
+						<Route path="/admin/*" element={<ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>}>
 							<Route index element={<Navigate to="overview" replace />} />
 							<Route path="overview" element={<Overview />} />
 							<Route path="statistiques" element={<Stats />} />
@@ -97,5 +140,13 @@ export default function App() {
 			</AnimatePresence>
 			<Footer />
 		</div>
+	);
+}
+
+export default function App() {
+	return (
+		<AuthProvider>
+			<AppContent />
+		</AuthProvider>
 	);
 }

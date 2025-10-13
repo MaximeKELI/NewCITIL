@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Final - Partie Admin</h1>
+    
+    <div class="test info">
+        <h3>Diagnostic complet</h3>
+        <button onclick="runFullTest()">Lancer le test complet</button>
+        <div id="fullTestResult"></div>
+    </div>
+
+    <script>
+        async function runFullTest() {
+            const result = document.getElementById('fullTestResult');
+            result.innerHTML = '<div class="info">🔄 Test en cours...</div>';
+            
+            let testResults = [];
+            
+            // Test 1: Connexion admin
+            try {
+                const loginResponse = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok) {
+                    testResults.push('✅ Connexion admin: OK');
+                    
+                    // Stocker les données
+                    localStorage.setItem('citil_token', loginData.token);
+                    localStorage.setItem('citil_user', JSON.stringify(loginData.user_info));
+                    
+                    // Test 2: Vérification du rôle
+                    if (loginData.user_info.role === 'admin') {
+                        testResults.push('✅ Rôle admin: OK');
+                        
+                        // Test 3: Test des routes API
+                        try {
+                            const apiResponse = await fetch('http://localhost:8000/api/admin/products', {
+                                headers: {
+                                    'Authorization': `Bearer ${loginData.token}`,
+                                    'Accept': 'application/json'
+                                }
+                            });
+                            
+                            if (apiResponse.ok) {
+                                testResults.push('✅ Routes API admin: OK');
+                            } else {
+                                testResults.push('❌ Routes API admin: Erreur ' + apiResponse.status);
+                            }
+                        } catch (error) {
+                            testResults.push('❌ Routes API admin: Erreur réseau');
+                        }
+                        
+                        // Test 4: Test de la page admin
+                        try {
+                            const pageResponse = await fetch('http://localhost:3000/admin', {
+                                method: 'GET',
+                                headers: { 'Accept': 'text/html' }
+                            });
+                            
+                            if (pageResponse.ok) {
+                                testResults.push('✅ Page admin accessible: OK');
+                                
+                                // Test 5: Vérification du contenu React
+                                const html = await pageResponse.text();
+                                if (html.includes('id="root"')) {
+                                    testResults.push('✅ React root détecté: OK');
+                                } else {
+                                    testResults.push('❌ React root: Non détecté');
+                                }
+                                
+                            } else {
+                                testResults.push('❌ Page admin: Erreur ' + pageResponse.status);
+                            }
+                        } catch (error) {
+                            testResults.push('❌ Page admin: Erreur réseau');
+                        }
+                        
+                    } else {
+                        testResults.push('❌ Rôle admin: NON (rôle: ' + loginData.user_info.role + ')');
+                    }
+                    
+                } else {
+                    testResults.push('❌ Connexion admin: Erreur - ' + loginData.message);
+                }
+                
+            } catch (error) {
+                testResults.push('❌ Connexion admin: Erreur réseau - ' + error.message);
+            }
+            
+            // Afficher les résultats
+            let resultHtml = '<h4>Résultats du test:</h4>';
+            testResults.forEach(test => {
+                const isSuccess = test.startsWith('✅');
+                resultHtml += `<div class="${isSuccess ? 'success' : 'error'}">${test}</div>`;
+            });
+            
+            // Ajouter un bouton pour tester la navigation
+            if (testResults.some(t => t.includes('✅ Rôle admin: OK'))) {
+                resultHtml += `
+                    <div class="info">
+                        <h4>Test de navigation:</h4>
+                        <button onclick="window.open('http://localhost:3000/admin', '_blank')">Ouvrir /admin dans un nouvel onglet</button>
+                        <button onclick="testAdminInIframe()">Tester dans un iframe</button>
+                    </div>
+                `;
+            }
+            
+            result.innerHTML = resultHtml;
+        }
+        
+        function testAdminInIframe() {
+            const result = document.getElementById('fullTestResult');
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = 'http://localhost:3000/admin';
+            iframe.style.width = '100%';
+            iframe.style.height = '500px';
+            iframe.style.border = '1px solid #ddd';
+            iframe.style.marginTop = '10px';
+            
+            iframe.onload = function() {
+                result.innerHTML += '<div class="success">✅ Page admin chargée dans l\'iframe</div>';
+            };
+            
+            iframe.onerror = function() {
+                result.innerHTML += '<div class="error">❌ Erreur de chargement de la page admin</div>';
+            };
+            
+            result.appendChild(iframe);
+        }
+    </script>
+</body>
+</html>

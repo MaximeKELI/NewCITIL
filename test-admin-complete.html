@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Complet</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        .step { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 3px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Complet de la Partie Admin</h1>
+    
+    <div class="test info">
+        <h3>Étape 1: Connexion Admin</h3>
+        <button onclick="step1()">Se connecter en tant qu'admin</button>
+        <div id="step1Result"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Étape 2: Vérification du rôle</h3>
+        <button onclick="step2()">Vérifier le rôle utilisateur</button>
+        <div id="step2Result"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Étape 3: Test des routes API admin</h3>
+        <button onclick="step3()">Tester les routes admin</button>
+        <div id="step3Result"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Étape 4: Test de navigation admin</h3>
+        <button onclick="step4()">Aller à la page admin</button>
+        <div id="step4Result"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Étape 5: Test de chargement des composants admin</h3>
+        <button onclick="step5()">Tester le chargement des composants</button>
+        <div id="step5Result"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let userInfo = null;
+
+        async function step1() {
+            const result = document.getElementById('step1Result');
+            result.innerHTML = '<div class="step">Connexion en cours...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    userInfo = data.user_info;
+                    
+                    // Stocker dans localStorage
+                    localStorage.setItem('citil_token', authToken);
+                    localStorage.setItem('citil_user', JSON.stringify(userInfo));
+                    
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Connexion réussie !</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de connexion</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Erreur réseau</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function step2() {
+            const result = document.getElementById('step2Result');
+            
+            if (!userInfo) {
+                result.innerHTML = '<div class="error">Veuillez d\'abord vous connecter (Étape 1)</div>';
+                return;
+            }
+            
+            const isAdmin = userInfo.role === 'admin';
+            
+            result.innerHTML = `
+                <div class="${isAdmin ? 'success' : 'error'}">
+                    <h4>${isAdmin ? '✅' : '❌'} Vérification du rôle</h4>
+                    <p><strong>Nom:</strong> ${userInfo.name}</p>
+                    <p><strong>Email:</strong> ${userInfo.email}</p>
+                    <p><strong>Rôle:</strong> ${userInfo.role}</p>
+                    <p><strong>Est admin:</strong> ${isAdmin ? 'OUI' : 'NON'}</p>
+                </div>
+            `;
+        }
+
+        async function step3() {
+            const result = document.getElementById('step3Result');
+            
+            if (!authToken) {
+                result.innerHTML = '<div class="error">Veuillez d\'abord vous connecter (Étape 1)</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div class="step">Test des routes API admin...</div>';
+            
+            const routes = [
+                { name: 'Produits', url: '/api/admin/products' },
+                { name: 'Catégories', url: '/api/admin/categories' },
+                { name: 'Formations', url: '/api/admin/trainings' },
+                { name: 'Blog', url: '/api/admin/blog-posts' },
+                { name: 'Utilisateur', url: '/api/user' }
+            ];
+            
+            let results = '<h4>Résultats des tests API:</h4>';
+            
+            for (const route of routes) {
+                try {
+                    const response = await fetch(`http://localhost:8000${route.url}`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        results += `
+                            <div class="success">
+                                <strong>✅ ${route.name}:</strong> OK 
+                                ${Array.isArray(data) ? `(${data.length} éléments)` : '(Données reçues)'}
+                            </div>
+                        `;
+                    } else {
+                        results += `
+                            <div class="error">
+                                <strong>❌ ${route.name}:</strong> Erreur ${response.status}
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    results += `
+                        <div class="error">
+                            <strong>❌ ${route.name}:</strong> Erreur réseau - ${error.message}
+                        </div>
+                    `;
+                }
+            }
+            
+            result.innerHTML = results;
+        }
+
+        function step4() {
+            const result = document.getElementById('step4Result');
+            
+            if (!userInfo || userInfo.role !== 'admin') {
+                result.innerHTML = '<div class="error">Utilisateur non admin. Veuillez vous connecter en tant qu\'admin.</div>';
+                return;
+            }
+            
+            result.innerHTML = `
+                <div class="info">
+                    <h4>🔄 Test de navigation vers /admin</h4>
+                    <p>L'utilisateur est admin, testons l'accès à la page admin...</p>
+                    <button onclick="window.open('http://localhost:3000/admin', '_blank')">Ouvrir /admin dans un nouvel onglet</button>
+                    <button onclick="testAdminPage()">Tester le chargement de la page admin</button>
+                </div>
+            `;
+        }
+
+        async function step5() {
+            const result = document.getElementById('step5Result');
+            
+            if (!userInfo || userInfo.role !== 'admin') {
+                result.innerHTML = '<div class="error">Utilisateur non admin</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div class="step">Test du chargement des composants admin...</div>';
+            
+            try {
+                // Tester le chargement de la page admin
+                const response = await fetch('http://localhost:3000/admin', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html'
+                    }
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    
+                    // Vérifier la présence d'éléments clés
+                    const hasReactRoot = html.includes('id="root"');
+                    const hasAdminContent = html.includes('admin') || html.includes('Admin');
+                    
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Page admin accessible</h4>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>React Root:</strong> ${hasReactRoot ? 'Présent' : 'Absent'}</p>
+                            <p><strong>Contenu admin:</strong> ${hasAdminContent ? 'Détecté' : 'Non détecté'}</p>
+                            <button onclick="window.open('http://localhost:3000/admin', '_blank')">Ouvrir la page admin</button>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de chargement</h4>
+                            <p>Status: ${response.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Erreur de test</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAdminPage() {
+            const result = document.getElementById('step4Result');
+            result.innerHTML += '<div class="step">Test en cours...</div>';
+            
+            try {
+                // Ouvrir la page admin dans un iframe pour tester
+                const iframe = document.createElement('iframe');
+                iframe.src = 'http://localhost:3000/admin';
+                iframe.style.width = '100%';
+                iframe.style.height = '400px';
+                iframe.style.border = '1px solid #ddd';
+                
+                iframe.onload = function() {
+                    result.innerHTML += '<div class="success">✅ Page admin chargée dans l\'iframe</div>';
+                };
+                
+                iframe.onerror = function() {
+                    result.innerHTML += '<div class="error">❌ Erreur de chargement de la page admin</div>';
+                };
+                
+                result.appendChild(iframe);
+                
+            } catch (error) {
+                result.innerHTML += `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

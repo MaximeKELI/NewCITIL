@@ -33,12 +33,13 @@ use App\Http\Controllers\Api\InternshipApplicationController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Protégées
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logOut']);
-    Route::get('/get-user', [AuthController::class, 'userInfo']);
-    Route::put('/profile', [AuthController::class, 'updateProfile']);
-});    
+    // Protégées
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logOut']);
+        Route::get('/user', [AuthController::class, 'userInfo']);
+        Route::get('/get-user', [AuthController::class, 'userInfo']);
+        Route::post('/profile', [AuthController::class, 'updateProfile']);
+    });
 
 
 // Liste des produits (lecture seule pour la boutique)

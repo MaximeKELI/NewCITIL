@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Responsivité - Plateforme CITIL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.95);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .test-section h2 {
+            color: #2C3E50;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .breakpoint-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .breakpoint-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3498DB;
+            text-align: center;
+        }
+
+        .breakpoint-card.active {
+            background: #e8f5e8;
+            border-left-color: #27ae60;
+        }
+
+        .breakpoint-card h3 {
+            color: #2C3E50;
+            margin-bottom: 5px;
+        }
+
+        .breakpoint-card p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .responsive-demo {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .responsive-grid {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: 1fr;
+        }
+
+        .responsive-item {
+            background: #3498DB;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .responsive-text {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .responsive-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .responsive-button:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 9999;
+            max-width: 200px;
+        }
+
+        .debug-info h4 {
+            margin: 0 0 5px 0;
+            color: #4CAF50;
+        }
+
+        .debug-info p {
+            margin: 2px 0;
+        }
+
+        .test-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .test-link {
+            background: #3498DB;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .test-link:hover {
+            background: #2980B9;
+            transform: translateY(-2px);
+        }
+
+        .test-link.admin {
+            background: #8e44ad;
+        }
+
+        .test-link.admin:hover {
+            background: #7d3c98;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 480px) {
+            .responsive-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .responsive-text {
+                font-size: 1.1rem;
+            }
+            .responsive-button {
+                padding: 12px 24px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .responsive-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .responsive-text {
+                font-size: 1.2rem;
+            }
+            .responsive-button {
+                padding: 14px 28px;
+                font-size: 1.2rem;
+            }
+            .header h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .responsive-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .responsive-text {
+                font-size: 1.3rem;
+            }
+            .responsive-button {
+                padding: 16px 32px;
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .responsive-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            .responsive-text {
+                font-size: 1.4rem;
+            }
+            .responsive-button {
+                padding: 18px 36px;
+                font-size: 1.4rem;
+            }
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .instructions h3 {
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info" id="debugInfo">
+        <h4>📱 Debug Info</h4>
+        <p id="screenSize">Taille: 0x0</p>
+        <p id="breakpoint">Breakpoint: -</p>
+        <p id="orientation">Orientation: -</p>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📱 Test de Responsivité</h1>
+            <p>Plateforme CITIL - Test des composants sur différents écrans</p>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instructions de Test</h3>
+            <ul>
+                <li>Redimensionnez votre fenêtre de navigateur</li>
+                <li>Testez sur différents appareils (mobile, tablette, desktop)</li>
+                <li>Vérifiez que les composants s'adaptent correctement</li>
+                <li>Testez l'orientation portrait/paysage sur mobile</li>
+                <li>Vérifiez que les notifications de débogage sont responsives</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Breakpoints Actuels</h2>
+            <div class="breakpoint-info">
+                <div class="breakpoint-card" id="xs">
+                    <h3>XS</h3>
+                    <p>&lt; 480px</p>
+                    <p>Mobile Small</p>
+                </div>
+                <div class="breakpoint-card" id="sm">
+                    <h3>SM</h3>
+                    <p>480px - 767px</p>
+                    <p>Mobile</p>
+                </div>
+                <div class="breakpoint-card" id="md">
+                    <h3>MD</h3>
+                    <p>768px - 1023px</p>
+                    <p>Tablet</p>
+                </div>
+                <div class="breakpoint-card" id="lg">
+                    <h3>LG</h3>
+                    <p>1024px - 1279px</p>
+                    <p>Desktop</p>
+                </div>
+                <div class="breakpoint-card" id="xl">
+                    <h3>XL</h3>
+                    <p>&gt; 1280px</p>
+                    <p>Large Desktop</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Test des Composants Responsives</h2>
+            <div class="responsive-demo">
+                <h3>Grille Responsive</h3>
+                <div class="responsive-grid">
+                    <div class="responsive-item">Item 1</div>
+                    <div class="responsive-item">Item 2</div>
+                    <div class="responsive-item">Item 3</div>
+                    <div class="responsive-item">Item 4</div>
+                    <div class="responsive-item">Item 5</div>
+                </div>
+            </div>
+
+            <div class="responsive-demo">
+                <h3>Texte Responsive</h3>
+                <p class="responsive-text">
+                    Ce texte s'adapte à la taille de l'écran. 
+                    Sur mobile, il est plus petit, sur desktop, il est plus grand.
+                </p>
+            </div>
+
+            <div class="responsive-demo">
+                <h3>Boutons Responsives</h3>
+                <button class="responsive-button">Bouton 1</button>
+                <button class="responsive-button">Bouton 2</button>
+                <button class="responsive-button">Bouton 3</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 Liens de Test</h2>
+            <div class="test-links">
+                <a href="http://localhost:3000" class="test-link" target="_blank">
+                    🏠 Interface Utilisateur
+                </a>
+                <a href="http://localhost:3000/admin-login" class="test-link admin" target="_blank">
+                    🔧 Interface Admin
+                </a>
+                <a href="http://localhost:3000/login" class="test-link" target="_blank">
+                    🔐 Page de Connexion
+                </a>
+                <a href="http://localhost:3000/register" class="test-link" target="_blank">
+                    📝 Page d'Inscription
+                </a>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📱 Test des Notifications de Débogage</h2>
+            <p>Les composants de débogage (DebugAuth et AdminTestButton) sont maintenant responsives :</p>
+            <ul>
+                <li><strong>Mobile (&lt; 768px)</strong> : S'étendent sur toute la largeur avec marges</li>
+                <li><strong>Tablet (768px - 1023px)</strong> : Largeur fixe avec positionnement adaptatif</li>
+                <li><strong>Desktop (&gt; 1024px)</strong> : Largeur fixe de 300px</li>
+                <li><strong>Texte</strong> : Taille adaptative selon la taille d'écran</li>
+                <li><strong>Padding</strong> : Espacement adaptatif</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ Checklist de Responsivité</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                <div>
+                    <h4>📱 Mobile</h4>
+                    <ul>
+                        <li>✓ Navigation hamburger</li>
+                        <li>✓ Texte lisible</li>
+                        <li>✓ Boutons tactiles</li>
+                        <li>✓ Images adaptatives</li>
+                        <li>✓ Notifications responsives</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>💻 Desktop</h4>
+                    <ul>
+                        <li>✓ Navigation complète</li>
+                        <li>✓ Grilles multi-colonnes</li>
+                        <li>✓ Hover effects</li>
+                        <li>✓ Espacement optimal</li>
+                        <li>✓ Notifications positionnées</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateDebugInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const orientation = width > height ? 'Paysage' : 'Portrait';
+            
+            document.getElementById('screenSize').textContent = `Taille: ${width}x${height}`;
+            document.getElementById('orientation').textContent = `Orientation: ${orientation}`;
+            
+            // Déterminer le breakpoint actuel
+            let breakpoint = 'XL';
+            if (width < 480) breakpoint = 'XS';
+            else if (width < 768) breakpoint = 'SM';
+            else if (width < 1024) breakpoint = 'MD';
+            else if (width < 1280) breakpoint = 'LG';
+            
+            document.getElementById('breakpoint').textContent = `Breakpoint: ${breakpoint}`;
+            
+            // Mettre à jour les cartes de breakpoint
+            document.querySelectorAll('.breakpoint-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.getElementById(breakpoint.toLowerCase()).classList.add('active');
+        }
+
+        // Mettre à jour au chargement et au redimensionnement
+        updateDebugInfo();
+        window.addEventListener('resize', updateDebugInfo);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateDebugInfo, 100);
+        });
+
+        // Animation des cartes de breakpoint
+        document.querySelectorAll('.breakpoint-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.breakpoint-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test de la partie Admin Frontend</h1>
+    
+    <div class="test-section info">
+        <h3>1. Test de connexion Admin</h3>
+        <button onclick="testAdminLogin()">Se connecter en tant qu'admin</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section info">
+        <h3>2. Test d'accès aux routes admin</h3>
+        <button onclick="testAdminRoutes()">Tester les routes admin</button>
+        <div id="routesResult"></div>
+    </div>
+    
+    <div class="test-section info">
+        <h3>3. Test de navigation vers /admin</h3>
+        <button onclick="testAdminNavigation()">Aller à /admin</button>
+        <div id="navigationResult"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let authToken = null;
+        let userInfo = null;
+
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>Connexion en cours...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    userInfo = data.user_info;
+                    
+                    // Stocker dans localStorage comme le fait l'app
+                    localStorage.setItem('citil_token', authToken);
+                    localStorage.setItem('citil_user', JSON.stringify(userInfo));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Connexion réussie !</h4>
+                            <p><strong>Utilisateur:</strong> ${userInfo.name} (${userInfo.email})</p>
+                            <p><strong>Rôle:</strong> ${userInfo.role}</p>
+                            <p><strong>Token:</strong> ${authToken ? 'Présent' : 'Absent'}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de connexion</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Erreur réseau</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAdminRoutes() {
+            const resultDiv = document.getElementById('routesResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error">Veuillez d\'abord vous connecter</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Test des routes admin...</p>';
+            
+            const routes = [
+                { name: 'Produits', url: '/api/admin/products' },
+                { name: 'Catégories', url: '/api/admin/categories' },
+                { name: 'Formations', url: '/api/admin/trainings' },
+                { name: 'Utilisateur', url: '/api/user' }
+            ];
+            
+            let results = '<h4>Résultats des tests:</h4>';
+            
+            for (const route of routes) {
+                try {
+                    const response = await fetch(`${API_URL}${route.url}`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        results += `<div class="success">
+                            <strong>✅ ${route.name}:</strong> OK (${Array.isArray(data) ? data.length + ' éléments' : 'Données reçues'})
+                        </div>`;
+                    } else {
+                        results += `<div class="error">
+                            <strong>❌ ${route.name}:</strong> Erreur ${response.status}
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>`;
+                    }
+                } catch (error) {
+                    results += `<div class="error">
+                        <strong>❌ ${route.name}:</strong> Erreur réseau - ${error.message}
+                    </div>`;
+                }
+            }
+            
+            resultDiv.innerHTML = results;
+        }
+
+        function testAdminNavigation() {
+            const resultDiv = document.getElementById('navigationResult');
+            
+            if (!authToken || !userInfo) {
+                resultDiv.innerHTML = '<div class="error">Veuillez d\'abord vous connecter</div>';
+                return;
+            }
+            
+            if (userInfo.role !== 'admin') {
+                resultDiv.innerHTML = '<div class="error">L\'utilisateur n\'est pas admin</div>';
+                return;
+            }
+            
+            // Simuler la navigation vers /admin
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <h4>🔄 Redirection vers /admin</h4>
+                    <p>L'utilisateur est admin, la redirection devrait fonctionner.</p>
+                    <button onclick="window.open('http://localhost:3000/admin', '_blank')">Ouvrir /admin dans un nouvel onglet</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

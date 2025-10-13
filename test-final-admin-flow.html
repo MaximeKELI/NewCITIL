@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final Admin Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Test Final - Flux Admin Complet</h1>
+    
+    <div class="test success">
+        <h3>✅ Corrections apportées</h3>
+        <ul>
+            <li><strong>Page d'inscription (Register.jsx):</strong> Redirection vers /admin si rôle admin</li>
+            <li><strong>Page de connexion (Login.jsx):</strong> Redirection vers /admin si rôle admin</li>
+            <li><strong>Composant DebugAuth:</strong> Affichage de l'état d'authentification</li>
+            <li><strong>Composant AdminTestButton:</strong> Bouton de test pour la connexion admin</li>
+        </ul>
+    </div>
+    
+    <div class="test info">
+        <h3>🧪 Tests à effectuer</h3>
+        <ol>
+            <li><strong>Test de connexion admin:</strong>
+                <ul>
+                    <li>Allez sur <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                    <li>Cliquez sur le bouton "Tester Connexion Admin" en bas à droite</li>
+                    <li>Vérifiez que vous êtes redirigé vers /admin</li>
+                </ul>
+            </li>
+            <li><strong>Test via page de connexion:</strong>
+                <ul>
+                    <li>Allez sur <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a></li>
+                    <li>Connectez-vous avec admin@citil.tg / password123</li>
+                    <li>Vérifiez que vous êtes redirigé vers /admin</li>
+                </ul>
+            </li>
+            <li><strong>Test de connexion client:</strong>
+                <ul>
+                    <li>Créez un compte client normal</li>
+                    <li>Connectez-vous</li>
+                    <li>Vérifiez que vous êtes redirigé vers / (page d'accueil)</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+    
+    <div class="test info">
+        <h3>🔍 Debug</h3>
+        <p>Pour déboguer, ouvrez la console du navigateur (F12) et regardez :</p>
+        <ul>
+            <li>Les logs de l'AuthContext</li>
+            <li>Les logs du ProtectedRoute</li>
+            <li>Le composant DebugAuth en haut à droite</li>
+            <li>Le composant AdminTestButton en bas à droite</li>
+        </ul>
+    </div>
+    
+    <div class="test info">
+        <h3>📋 État des serveurs</h3>
+        <p>Vérifiez que les serveurs sont démarrés :</p>
+        <ul>
+            <li><strong>Backend Laravel:</strong> <a href="http://localhost:8000" target="_blank">http://localhost:8000</a></li>
+            <li><strong>Frontend React:</strong> <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+        </ul>
+    </div>
+
+    <script>
+        // Test automatique de l'API
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    console.log('✅ API Backend fonctionne');
+                    console.log('Utilisateur admin:', data.user_info);
+                } else {
+                    console.log('❌ Erreur API Backend:', data);
+                }
+            } catch (error) {
+                console.log('❌ Erreur de connexion à l\'API:', error);
+            }
+        }
+        
+        // Lancer le test automatique
+        testAPI();
+    </script>
+</body>
+</html>

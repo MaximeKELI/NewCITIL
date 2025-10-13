@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Redirect</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ddd; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test de la redirection Admin</h1>
+    
+    <div class="test info">
+        <h3>1. Connexion Admin</h3>
+        <button onclick="loginAdmin()">Se connecter en tant qu'admin</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>2. Test de navigation vers /admin</h3>
+        <button onclick="testAdminNavigation()">Tester la navigation admin</button>
+        <div id="navResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>3. Test avec iframe (pour voir les logs console)</h3>
+        <button onclick="testWithIframe()">Tester avec iframe</button>
+        <div id="iframeResult"></div>
+    </div>
+
+    <script>
+        async function loginAdmin() {
+            const result = document.getElementById('loginResult');
+            result.innerHTML = 'Connexion...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('citil_token', data.token);
+                    localStorage.setItem('citil_user', JSON.stringify(data.user_info));
+                    
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Connexion réussie</h4>
+                            <p><strong>Utilisateur:</strong> ${data.user_info.name}</p>
+                            <p><strong>Rôle:</strong> ${data.user_info.role}</p>
+                            <p><strong>Email:</strong> ${data.user_info.email}</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de connexion</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        function testAdminNavigation() {
+            const result = document.getElementById('navResult');
+            
+            const user = JSON.parse(localStorage.getItem('citil_user') || '{}');
+            
+            if (!user || !user.role) {
+                result.innerHTML = '<div class="error">❌ Aucun utilisateur connecté</div>';
+                return;
+            }
+            
+            if (user.role !== 'admin') {
+                result.innerHTML = `<div class="error">❌ Utilisateur non admin (rôle: ${user.role})</div>`;
+                return;
+            }
+            
+            result.innerHTML = `
+                <div class="success">
+                    <h4>✅ Utilisateur admin détecté</h4>
+                    <p>Test de navigation vers /admin...</p>
+                    <button onclick="window.open('http://localhost:3000/admin', '_blank')">Ouvrir /admin dans un nouvel onglet</button>
+                    <p><strong>Note:</strong> Ouvrez la console du navigateur (F12) pour voir les logs de débogage</p>
+                </div>
+            `;
+        }
+        
+        function testWithIframe() {
+            const result = document.getElementById('iframeResult');
+            
+            const user = JSON.parse(localStorage.getItem('citil_user') || '{}');
+            
+            if (!user || user.role !== 'admin') {
+                result.innerHTML = '<div class="error">❌ Veuillez d\'abord vous connecter en tant qu\'admin</div>';
+                return;
+            }
+            
+            result.innerHTML = `
+                <div class="info">
+                    <h4>Test avec iframe</h4>
+                    <p>L'iframe va charger la page admin. Vérifiez la console pour les logs de débogage.</p>
+                </div>
+            `;
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = 'http://localhost:3000/admin';
+            iframe.id = 'adminIframe';
+            
+            iframe.onload = function() {
+                result.innerHTML += '<div class="success">✅ Page admin chargée dans l\'iframe</div>';
+            };
+            
+            iframe.onerror = function() {
+                result.innerHTML += '<div class="error">❌ Erreur de chargement de la page admin</div>';
+            };
+            
+            result.appendChild(iframe);
+        }
+    </script>
+</body>
+</html>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ApiService } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.js';
 
 export default function Login() {
 	const navigate = useNavigate();
+	const { login } = useAuth();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [loading, setLoading] = useState(false);
@@ -14,8 +15,16 @@ export default function Login() {
 		setError('');
 		setLoading(true);
 		try {
-			await ApiService.login(email, password);
-			navigate('/');
+			const result = await login(email, password);
+			
+			// Rediriger selon le rôle de l'utilisateur connecté
+			if (result.user && result.user.role === 'admin') {
+				console.log('Connexion admin, redirection vers /admin-login');
+				navigate('/admin-login');
+			} else {
+				console.log('Connexion client, redirection vers /');
+				navigate('/');
+			}
 		} catch (err) {
 			setError(err.message || 'Erreur de connexion');
 		} finally {

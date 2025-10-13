@@ -19,10 +19,13 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
+            Log::info('Registration attempt', $request->all());
+            
             $validated = $request->validate([
                 'name'     => 'required|string|min:4',
                 'email'    => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8|confirmed',
+                'password' => 'required|string|min:8',
+                'password_confirmation' => 'required|string|min:8|same:password',
             ]);
 
             $user = User::create([
@@ -201,7 +204,7 @@ class AuthController extends Controller
                 // Stocker le nouvel avatar
                 $avatarFile = $request->file('avatar');
                 $avatarName = time() . '_' . $user->id . '.' . $avatarFile->getClientOriginalExtension();
-                $avatarFile->storeAs('avatars', $avatarName);
+                $path = $avatarFile->storeAs('avatars', $avatarName, 'public');
                 $user->avatar = $avatarName;
             }
 

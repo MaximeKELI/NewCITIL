@@ -1,36 +1,17 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext.js';
-import { ApiService } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.js';
+import { getAvatarUrl } from '../utils/avatarUtils.js';
 
 export default function Navbar() {
 	const { cartItems } = useCart();
+	const { user, logout, isAdmin } = useAuth();
 	const [open, setOpen] = useState(false);
-	const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('citil_token'));
-	const [user, setUser] = useState(null);
 	const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 	const navigate = useNavigate();
 	const count = cartItems.reduce((s, i) => s + i.quantity, 0);
-
-	useEffect(() => {
-		const onAuth = () => {
-			const token = localStorage.getItem('citil_token');
-			setIsAuthenticated(!!token);
-			if (token) {
-				// Récupérer les informations utilisateur depuis le token ou l'API
-				const userData = localStorage.getItem('citil_user');
-				if (userData) {
-					setUser(JSON.parse(userData));
-				}
-			} else {
-				setUser(null);
-			}
-		};
-		onAuth(); // Appel initial
-		window.addEventListener('authChanged', onAuth);
-		return () => window.removeEventListener('authChanged', onAuth);
-	}, []);
 
 	const onKeyDown = useCallback((e) => {
 		if (open && e.key === 'Escape') setOpen(false);
@@ -65,7 +46,6 @@ export default function Navbar() {
 						{navItem('/formations', 'Formations')}
 						{navItem('/stages', 'Stages')}
 						{navItem('/blog', 'Blog')}
-						{navItem('/admin', 'Admin')}
 						{navItem('/contact', 'Contact')}
 						<Link to="/panier" className="relative px-3 py-2 rounded-md text-lg font-medium text-[#2C3E50] hover:text-white hover:bg-[#2980B9]">
 							Panier
@@ -75,7 +55,7 @@ export default function Navbar() {
 								</motion.span>
 							)}
 						</Link>
-						{isAuthenticated ? (
+						{user ? (
 							<div className="relative">
 								<button
 									onClick={() => setProfileMenuOpen(!profileMenuOpen)}
@@ -85,7 +65,7 @@ export default function Navbar() {
 									<div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#3498DB] to-[#2980B9] flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
 										{user?.avatar ? (
 											<img 
-												src={user.avatar} 
+												src={getAvatarUrl(user.avatar)} 
 												alt="Avatar" 
 												className="w-full h-full object-cover"
 											/>
@@ -136,7 +116,7 @@ export default function Navbar() {
 													Mon profil
 												</Link>
 												<button
-													onClick={() => { ApiService.logout(); setProfileMenuOpen(false); navigate('/'); }}
+													onClick={() => { logout(); setProfileMenuOpen(false); navigate('/'); }}
 													className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-3">
@@ -233,18 +213,14 @@ export default function Navbar() {
 										</Link>
 									</div>
 									
-									{/* Admin */}
-									<div className="mb-4">
-										{navItem('/admin', 'Admin')}
-									</div>
 									
 									{/* Séparateur */}
 									<div className="border-t my-4"></div>
 									
 									{/* Compte/Déconnexion */}
 									<div>
-										{isAuthenticated ? (
-											<button onClick={() => { ApiService.logout(); setOpen(false); navigate('/'); }} className="w-full text-left block px-3 py-3 rounded-md text-base font-medium text-[#2C3E50] hover:text-white hover:bg-[#2980B9] flex items-center gap-3">
+										{user ? (
+											<button onClick={() => { logout(); setOpen(false); navigate('/'); }} className="w-full text-left block px-3 py-3 rounded-md text-base font-medium text-[#2C3E50] hover:text-white hover:bg-[#2980B9] flex items-center gap-3">
 												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
 													<path fillRule="evenodd" d="M3.75 4.5A2.25 2.25 0 0 1 6 2.25h6A2.25 2.25 0 0 1 14.25 4.5v3a.75.75 0 0 1-1.5 0v-3A.75.75 0 0 0 12 3.75H6a.75.75 0 0 0-.75.75v12a.75.75 0 0 0 .75.75h6a.75.75 0 0 0 .75-.75v-3a.75.75 0 0 1 1.5 0v3A2.25 2.25 0 0 1 12 19.5H6A2.25 2.25 0 0 1 3.75 17.25v-12Zm12.53 3.22a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1 0 1.06l-3 3a.75.75 0 1 1-1.06-1.06l1.72-1.72H9a.75.75 0 0 1 0-1.5h9.97l-1.72-1.72a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
 												</svg>

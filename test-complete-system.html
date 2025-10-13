@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Système Complet</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        .warning { background: #fff3cd; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        .status { display: inline-block; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .status-ok { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Complet du Système</h1>
+    
+    <div class="test info">
+        <h3>État des serveurs</h3>
+        <button onclick="checkAllServices()">Vérifier tous les services</button>
+        <div id="servicesResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test de connexion base de données</h3>
+        <button onclick="testDatabase()">Tester la base de données</button>
+        <div id="databaseResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test de l'API Backend</h3>
+        <button onclick="testBackendAPI()">Tester l'API Backend</button>
+        <div id="backendResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test du Frontend</h3>
+        <button onclick="testFrontend()">Tester le Frontend</button>
+        <div id="frontendResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test de connexion Frontend-Backend</h3>
+        <button onclick="testFrontendBackendConnection()">Tester la connexion</button>
+        <div id="connectionResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test complet du flux admin</h3>
+        <button onclick="testAdminFlow()">Tester le flux admin complet</button>
+        <div id="adminFlowResult"></div>
+    </div>
+
+    <script>
+        async function checkAllServices() {
+            const result = document.getElementById('servicesResult');
+            result.innerHTML = '<div class="info">🔄 Vérification des services...</div>';
+            
+            let services = [];
+            
+            // Vérifier Backend Laravel
+            try {
+                const backendResponse = await fetch('http://localhost:8000/api/products');
+                if (backendResponse.ok) {
+                    services.push('<span class="status status-ok">✅ Backend Laravel (Port 8000)</span>');
+                } else {
+                    services.push('<span class="status status-error">❌ Backend Laravel (Port 8000) - Erreur ' + backendResponse.status + '</span>');
+                }
+            } catch (error) {
+                services.push('<span class="status status-error">❌ Backend Laravel (Port 8000) - Inaccessible</span>');
+            }
+            
+            // Vérifier Frontend React
+            try {
+                const frontendResponse = await fetch('http://localhost:3000');
+                if (frontendResponse.ok) {
+                    services.push('<span class="status status-ok">✅ Frontend React (Port 3000)</span>');
+                } else {
+                    services.push('<span class="status status-error">❌ Frontend React (Port 3000) - Erreur ' + frontendResponse.status + '</span>');
+                }
+            } catch (error) {
+                services.push('<span class="status status-error">❌ Frontend React (Port 3000) - Inaccessible</span>');
+            }
+            
+            result.innerHTML = '<h4>Services:</h4>' + services.join('<br>');
+        }
+        
+        async function testDatabase() {
+            const result = document.getElementById('databaseResult');
+            result.innerHTML = '<div class="info">🔄 Test de la base de données...</div>';
+            
+            try {
+                // Test de connexion via l'API
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Base de données accessible</h4>
+                            <p><strong>Utilisateur admin trouvé:</strong> ${data.user_info.name} (${data.user_info.email})</p>
+                            <p><strong>Rôle:</strong> ${data.user_info.role}</p>
+                            <p><strong>Token généré:</strong> ${data.token ? 'Oui' : 'Non'}</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de base de données</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur de connexion: ${error.message}</div>`;
+            }
+        }
+        
+        async function testBackendAPI() {
+            const result = document.getElementById('backendResult');
+            result.innerHTML = '<div class="info">🔄 Test de l\'API Backend...</div>';
+            
+            let tests = [];
+            
+            // Test 1: Route publique
+            try {
+                const publicResponse = await fetch('http://localhost:8000/api/products');
+                if (publicResponse.ok) {
+                    tests.push('<span class="status status-ok">✅ Route publique /api/products</span>');
+                } else {
+                    tests.push('<span class="status status-error">❌ Route publique /api/products - Erreur ' + publicResponse.status + '</span>');
+                }
+            } catch (error) {
+                tests.push('<span class="status status-error">❌ Route publique /api/products - Inaccessible</span>');
+            }
+            
+            // Test 2: Authentification
+            try {
+                const authResponse = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                if (authResponse.ok) {
+                    tests.push('<span class="status status-ok">✅ Authentification /api/login</span>');
+                    
+                    const authData = await authResponse.json();
+                    const token = authData.token;
+                    
+                    // Test 3: Route protégée
+                    try {
+                        const protectedResponse = await fetch('http://localhost:8000/api/admin/products', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (protectedResponse.ok) {
+                            tests.push('<span class="status status-ok">✅ Route protégée /api/admin/products</span>');
+                        } else {
+                            tests.push('<span class="status status-error">❌ Route protégée /api/admin/products - Erreur ' + protectedResponse.status + '</span>');
+                        }
+                    } catch (error) {
+                        tests.push('<span class="status status-error">❌ Route protégée /api/admin/products - Inaccessible</span>');
+                    }
+                } else {
+                    tests.push('<span class="status status-error">❌ Authentification /api/login - Erreur</span>');
+                }
+            } catch (error) {
+                tests.push('<span class="status status-error">❌ Authentification /api/login - Inaccessible</span>');
+            }
+            
+            result.innerHTML = '<h4>Tests API Backend:</h4>' + tests.join('<br>');
+        }
+        
+        async function testFrontend() {
+            const result = document.getElementById('frontendResult');
+            result.innerHTML = '<div class="info">🔄 Test du Frontend...</div>';
+            
+            let tests = [];
+            
+            // Test 1: Page d'accueil
+            try {
+                const homeResponse = await fetch('http://localhost:3000');
+                if (homeResponse.ok) {
+                    tests.push('<span class="status status-ok">✅ Page d\'accueil accessible</span>');
+                    
+                    const html = await homeResponse.text();
+                    if (html.includes('id="root"')) {
+                        tests.push('<span class="status status-ok">✅ React root détecté</span>');
+                    } else {
+                        tests.push('<span class="status status-warning">⚠️ React root non détecté</span>');
+                    }
+                } else {
+                    tests.push('<span class="status status-error">❌ Page d\'accueil - Erreur ' + homeResponse.status + '</span>');
+                }
+            } catch (error) {
+                tests.push('<span class="status status-error">❌ Page d\'accueil - Inaccessible</span>');
+            }
+            
+            // Test 2: Page de connexion
+            try {
+                const loginResponse = await fetch('http://localhost:3000/login');
+                if (loginResponse.ok) {
+                    tests.push('<span class="status status-ok">✅ Page de connexion accessible</span>');
+                } else {
+                    tests.push('<span class="status status-error">❌ Page de connexion - Erreur ' + loginResponse.status + '</span>');
+                }
+            } catch (error) {
+                tests.push('<span class="status status-error">❌ Page de connexion - Inaccessible</span>');
+            }
+            
+            // Test 3: Page admin
+            try {
+                const adminResponse = await fetch('http://localhost:3000/admin');
+                if (adminResponse.ok) {
+                    tests.push('<span class="status status-ok">✅ Page admin accessible</span>');
+                } else {
+                    tests.push('<span class="status status-error">❌ Page admin - Erreur ' + adminResponse.status + '</span>');
+                }
+            } catch (error) {
+                tests.push('<span class="status status-error">❌ Page admin - Inaccessible</span>');
+            }
+            
+            result.innerHTML = '<h4>Tests Frontend:</h4>' + tests.join('<br>');
+        }
+        
+        async function testFrontendBackendConnection() {
+            const result = document.getElementById('connectionResult');
+            result.innerHTML = '<div class="info">🔄 Test de connexion Frontend-Backend...</div>';
+            
+            try {
+                // Simuler une connexion depuis le frontend
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Stocker les données comme le ferait le frontend
+                    localStorage.setItem('citil_token', data.token);
+                    localStorage.setItem('citil_user', JSON.stringify(data.user_info));
+                    
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Connexion Frontend-Backend réussie</h4>
+                            <p><strong>Token stocké:</strong> ${data.token ? 'Oui' : 'Non'}</p>
+                            <p><strong>Utilisateur stocké:</strong> ${data.user_info.name} (${data.user_info.role})</p>
+                            <p><strong>Redirection attendue:</strong> ${data.user_info.role === 'admin' ? '/admin' : '/'}</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de connexion Frontend-Backend</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur de connexion: ${error.message}</div>`;
+            }
+        }
+        
+        async function testAdminFlow() {
+            const result = document.getElementById('adminFlowResult');
+            result.innerHTML = '<div class="info">🔄 Test du flux admin complet...</div>';
+            
+            try {
+                // Étape 1: Connexion admin
+                const loginResponse = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (!loginResponse.ok) {
+                    result.innerHTML = `<div class="error">❌ Échec de la connexion admin: ${loginData.message}</div>`;
+                    return;
+                }
+                
+                // Étape 2: Vérification du rôle
+                if (loginData.user_info.role !== 'admin') {
+                    result.innerHTML = `<div class="error">❌ Utilisateur non admin: ${loginData.user_info.role}</div>`;
+                    return;
+                }
+                
+                // Étape 3: Test des routes admin
+                const token = loginData.token;
+                const adminRoutes = [
+                    '/api/admin/products',
+                    '/api/admin/categories',
+                    '/api/admin/trainings',
+                    '/api/user'
+                ];
+                
+                let routeTests = [];
+                
+                for (const route of adminRoutes) {
+                    try {
+                        const routeResponse = await fetch(`http://localhost:8000${route}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (routeResponse.ok) {
+                            routeTests.push(`<span class="status status-ok">✅ ${route}</span>`);
+                        } else {
+                            routeTests.push(`<span class="status status-error">❌ ${route} - Erreur ${routeResponse.status}</span>`);
+                        }
+                    } catch (error) {
+                        routeTests.push(`<span class="status status-error">❌ ${route} - Inaccessible</span>`);
+                    }
+                }
+                
+                // Étape 4: Test de la page admin frontend
+                try {
+                    const adminPageResponse = await fetch('http://localhost:3000/admin');
+                    if (adminPageResponse.ok) {
+                        routeTests.push('<span class="status status-ok">✅ Page admin frontend accessible</span>');
+                    } else {
+                        routeTests.push('<span class="status status-error">❌ Page admin frontend - Erreur ' + adminPageResponse.status + '</span>');
+                    }
+                } catch (error) {
+                    routeTests.push('<span class="status status-error">❌ Page admin frontend - Inaccessible</span>');
+                }
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Flux admin complet testé</h4>
+                        <p><strong>Utilisateur admin:</strong> ${loginData.user_info.name} (${loginData.user_info.email})</p>
+                        <p><strong>Token:</strong> ${token ? 'Généré' : 'Non généré'}</p>
+                        <h5>Tests des routes:</h5>
+                        ${routeTests.join('<br>')}
+                        <p><strong>Instructions de test manuel:</strong></p>
+                        <ol>
+                            <li>Allez sur <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                            <li>Cliquez sur le bouton "Tester Connexion Admin" en bas à droite</li>
+                            <li>Vérifiez que vous êtes redirigé vers /admin</li>
+                        </ol>
+                    </div>
+                `;
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur lors du test du flux admin: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

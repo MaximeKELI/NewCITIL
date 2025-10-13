@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test des Notifications de Débogage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .feature h3 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        .demo-button {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .demo-button:hover {
+            background: #7d3c98;
+            transform: translateY(-2px);
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 300px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .notification-title {
+            margin: 0;
+            color: #4CAF50;
+            font-size: 14px;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+        }
+        .timer {
+            font-size: 10px;
+            color: #ccc;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .code-block {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Test des Notifications de Débogage</h1>
+        
+        <div class="feature">
+            <h3>✨ Fonctionnalités des Notifications</h3>
+            <p>Les composants de débogage ont été transformés en notifications temporaires :</p>
+            <ul>
+                <li><strong>DebugAuth</strong> : Se masque automatiquement après 10 secondes</li>
+                <li><strong>AdminTestButton</strong> : Se masque automatiquement après 15 secondes</li>
+                <li><strong>Bouton de fermeture</strong> : Permet de fermer manuellement</li>
+                <li><strong>Compteur de temps</strong> : Affiche le temps restant</li>
+                <li><strong>Animation d'entrée</strong> : Glissement depuis la droite/bas</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>🎯 Comportement Attendu</h3>
+            <p>Lorsque vous accédez à l'application :</p>
+            <ol>
+                <li>Les notifications apparaissent avec une animation</li>
+                <li>Un compteur décompte le temps restant</li>
+                <li>Elles disparaissent automatiquement après le délai</li>
+                <li>Vous pouvez les fermer manuellement avec le bouton ×</li>
+            </ol>
+        </div>
+
+        <div class="feature">
+            <h3>🧪 Test des Notifications</h3>
+            <p>Cliquez sur les boutons ci-dessous pour tester le comportement :</p>
+            <button class="demo-button" onclick="showDebugNotification()">🔍 Afficher Debug Auth</button>
+            <button class="demo-button" onclick="showAdminNotification()">🔧 Afficher Test Admin</button>
+            <button class="demo-button" onclick="clearAllNotifications()">🗑️ Effacer Toutes</button>
+        </div>
+
+        <div class="feature">
+            <h3>📱 Accès à l'Application</h3>
+            <p>Testez les notifications dans l'application réelle :</p>
+            <div class="code-block">
+                <strong>Interface Utilisateur :</strong><br>
+                <a href="http://localhost:3000" target="_blank" style="color: #4CAF50;">http://localhost:3000</a><br><br>
+                
+                <strong>Interface Admin :</strong><br>
+                <a href="http://localhost:3000/admin-login" target="_blank" style="color: #4CAF50;">http://localhost:3000/admin-login</a>
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>⚙️ Configuration des Timers</h3>
+            <div class="code-block">
+                // DebugAuth.jsx<br>
+                const [timeLeft, setTimeLeft] = useState(10); // 10 secondes<br><br>
+                
+                // AdminTestButton.jsx<br>
+                const [timeLeft, setTimeLeft] = useState(15); // 15 secondes
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let notificationCount = 0;
+
+        function showDebugNotification() {
+            const id = ++notificationCount;
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.top = (20 + (id - 1) * 120) + 'px';
+            notification.innerHTML = `
+                <div class="notification-header">
+                    <h4 class="notification-title">🔍 Debug Auth</h4>
+                    <div>
+                        <span class="timer">Auto-masquer dans <span id="timer-${id}">10</span>s</span>
+                        <button class="close-btn" onclick="closeNotification(${id})">×</button>
+                    </div>
+                </div>
+                <p style="margin: 4px 0;"><strong>Loading:</strong> NON</p>
+                <p style="margin: 4px 0;"><strong>User:</strong> Présent</p>
+                <p style="margin: 4px 0;"><strong>Nom:</strong> Admin Test</p>
+                <p style="margin: 4px 0;"><strong>Rôle:</strong> admin</p>
+                <p style="margin: 4px 0;"><strong>Token:</strong> Présent</p>
+            `;
+            document.body.appendChild(notification);
+
+            // Timer
+            let timeLeft = 10;
+            const timerElement = document.getElementById(`timer-${id}`);
+            const timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    closeNotification(id);
+                    clearInterval(timer);
+                }
+            }, 1000);
+        }
+
+        function showAdminNotification() {
+            const id = ++notificationCount;
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.top = (20 + (id - 1) * 120) + 'px';
+            notification.innerHTML = `
+                <div class="notification-header">
+                    <h4 class="notification-title">🔧 Test Admin</h4>
+                    <div>
+                        <span class="timer">Auto-masquer dans <span id="timer-${id}">15</span>s</span>
+                        <button class="close-btn" onclick="closeNotification(${id})">×</button>
+                    </div>
+                </div>
+                <p style="margin: 0 0 10px 0; font-size: 12px; color: #ccc;">
+                    Bouton de test pour vérifier la redirection admin
+                </p>
+                <button style="
+                    background: #8e44ad;
+                    color: white;
+                    border: none;
+                    padding: 10px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: bold;
+                    width: 100%;
+                ">🔧 Tester Connexion Admin</button>
+            `;
+            document.body.appendChild(notification);
+
+            // Timer
+            let timeLeft = 15;
+            const timerElement = document.getElementById(`timer-${id}`);
+            const timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    closeNotification(id);
+                    clearInterval(timer);
+                }
+            }, 1000);
+        }
+
+        function closeNotification(id) {
+            const notification = document.querySelector(`#timer-${id}`).closest('.notification');
+            if (notification) {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }
+        }
+
+        function clearAllNotifications() {
+            const notifications = document.querySelectorAll('.notification');
+            notifications.forEach(notification => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            });
+        }
+
+        // Auto-démarrer les notifications de démonstration
+        setTimeout(() => {
+            showDebugNotification();
+        }, 1000);
+
+        setTimeout(() => {
+            showAdminNotification();
+        }, 2000);
+    </script>
+</body>
+</html>

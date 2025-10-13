@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth State</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug { margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug de l'état d'authentification</h1>
+    
+    <div class="debug info">
+        <h3>1. Connexion Admin</h3>
+        <button onclick="loginAdmin()">Se connecter</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="debug info">
+        <h3>2. Vérification localStorage</h3>
+        <button onclick="checkLocalStorage()">Vérifier localStorage</button>
+        <div id="localStorageResult"></div>
+    </div>
+    
+    <div class="debug info">
+        <h3>3. Test de l'AuthContext</h3>
+        <button onclick="testAuthContext()">Tester AuthContext</button>
+        <div id="authContextResult"></div>
+    </div>
+    
+    <div class="debug info">
+        <h3>4. Test de navigation admin</h3>
+        <button onclick="testAdminNav()">Tester navigation admin</button>
+        <div id="navResult"></div>
+    </div>
+
+    <script>
+        async function loginAdmin() {
+            const result = document.getElementById('loginResult');
+            result.innerHTML = 'Connexion...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('citil_token', data.token);
+                    localStorage.setItem('citil_user', JSON.stringify(data.user_info));
+                    
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Connexion réussie</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de connexion</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        function checkLocalStorage() {
+            const result = document.getElementById('localStorageResult');
+            
+            const token = localStorage.getItem('citil_token');
+            const user = localStorage.getItem('citil_user');
+            
+            let userObj = null;
+            try {
+                userObj = user ? JSON.parse(user) : null;
+            } catch (e) {
+                userObj = null;
+            }
+            
+            result.innerHTML = `
+                <div class="info">
+                    <h4>État du localStorage:</h4>
+                    <p><strong>Token:</strong> ${token ? 'Présent (' + token.substring(0, 20) + '...)' : 'Absent'}</p>
+                    <p><strong>User:</strong> ${user ? 'Présent' : 'Absent'}</p>
+                    ${userObj ? `
+                        <p><strong>Nom:</strong> ${userObj.name}</p>
+                        <p><strong>Email:</strong> ${userObj.email}</p>
+                        <p><strong>Rôle:</strong> ${userObj.role}</p>
+                        <p><strong>Est admin:</strong> ${userObj.role === 'admin' ? 'OUI' : 'NON'}</p>
+                    ` : ''}
+                    <pre>${JSON.stringify({ token: !!token, user: userObj }, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        function testAuthContext() {
+            const result = document.getElementById('authContextResult');
+            
+            // Simuler le comportement de l'AuthContext
+            const token = localStorage.getItem('citil_token');
+            const userData = localStorage.getItem('citil_user');
+            
+            let user = null;
+            let loading = true;
+            
+            if (token && userData) {
+                try {
+                    user = JSON.parse(userData);
+                    loading = false;
+                } catch (error) {
+                    console.error('Erreur parsing user data:', error);
+                    loading = false;
+                }
+            } else {
+                loading = false;
+            }
+            
+            result.innerHTML = `
+                <div class="info">
+                    <h4>État simulé de l'AuthContext:</h4>
+                    <p><strong>Loading:</strong> ${loading}</p>
+                    <p><strong>User:</strong> ${user ? 'Présent' : 'Null'}</p>
+                    ${user ? `
+                        <p><strong>Nom:</strong> ${user.name}</p>
+                        <p><strong>Rôle:</strong> ${user.role}</p>
+                        <p><strong>Est admin:</strong> ${user.role === 'admin' ? 'OUI' : 'NON'}</p>
+                    ` : ''}
+                    <pre>${JSON.stringify({ loading, user }, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        function testAdminNav() {
+            const result = document.getElementById('navResult');
+            
+            const user = JSON.parse(localStorage.getItem('citil_user') || '{}');
+            
+            if (!user || !user.role) {
+                result.innerHTML = '<div class="error">❌ Aucun utilisateur connecté</div>';
+                return;
+            }
+            
+            if (user.role !== 'admin') {
+                result.innerHTML = `
+                    <div class="error">
+                        ❌ Utilisateur non admin (rôle: ${user.role})
+                    </div>
+                `;
+                return;
+            }
+            
+            result.innerHTML = `
+                <div class="success">
+                    ✅ Utilisateur admin détecté
+                    <p>Test de redirection vers /admin...</p>
+                    <button onclick="window.open('http://localhost:3000/admin', '_blank')">Ouvrir /admin</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

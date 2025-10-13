@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Debug Admin</h1>
+    
+    <div class="test info">
+        <h3>Instructions de test</h3>
+        <ol>
+            <li>Cliquez sur "Se connecter en tant qu'admin"</li>
+            <li>Ouvrez <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> dans un nouvel onglet</li>
+            <li>Regardez le composant DebugAuth en haut à droite</li>
+            <li>Cliquez sur "Admin" dans la navigation</li>
+            <li>Observez si vous êtes redirigé vers la page d'accueil</li>
+        </ol>
+    </div>
+    
+    <div class="test info">
+        <h3>1. Connexion Admin</h3>
+        <button onclick="loginAdmin()">Se connecter en tant qu'admin</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>2. Vérification de l'état</h3>
+        <button onclick="checkState()">Vérifier l'état actuel</button>
+        <div id="stateResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>3. Test de navigation</h3>
+        <button onclick="testNavigation()">Tester la navigation admin</button>
+        <div id="navResult"></div>
+    </div>
+
+    <script>
+        async function loginAdmin() {
+            const result = document.getElementById('loginResult');
+            result.innerHTML = 'Connexion...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('citil_token', data.token);
+                    localStorage.setItem('citil_user', JSON.stringify(data.user_info));
+                    
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Connexion réussie</h4>
+                            <p><strong>Utilisateur:</strong> ${data.user_info.name}</p>
+                            <p><strong>Rôle:</strong> ${data.user_info.role}</p>
+                            <p><strong>Email:</strong> ${data.user_info.email}</p>
+                            <p><strong>Token:</strong> ${data.token.substring(0, 20)}...</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de connexion</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        function checkState() {
+            const result = document.getElementById('stateResult');
+            
+            const token = localStorage.getItem('citil_token');
+            const user = localStorage.getItem('citil_user');
+            
+            let userObj = null;
+            try {
+                userObj = user ? JSON.parse(user) : null;
+            } catch (e) {
+                userObj = null;
+            }
+            
+            result.innerHTML = `
+                <div class="info">
+                    <h4>État actuel du localStorage:</h4>
+                    <p><strong>Token:</strong> ${token ? 'Présent (' + token.substring(0, 20) + '...)' : 'Absent'}</p>
+                    <p><strong>User:</strong> ${user ? 'Présent' : 'Absent'}</p>
+                    ${userObj ? `
+                        <p><strong>Nom:</strong> ${userObj.name}</p>
+                        <p><strong>Email:</strong> ${userObj.email}</p>
+                        <p><strong>Rôle:</strong> ${userObj.role}</p>
+                        <p><strong>Est admin:</strong> ${userObj.role === 'admin' ? 'OUI' : 'NON'}</p>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        function testNavigation() {
+            const result = document.getElementById('navResult');
+            
+            const user = JSON.parse(localStorage.getItem('citil_user') || '{}');
+            
+            if (!user || user.role !== 'admin') {
+                result.innerHTML = '<div class="error">❌ Veuillez d\'abord vous connecter en tant qu\'admin</div>';
+                return;
+            }
+            
+            result.innerHTML = `
+                <div class="success">
+                    <h4>✅ Prêt pour le test</h4>
+                    <p>Maintenant :</p>
+                    <ol>
+                        <li>Ouvrez <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                        <li>Regardez le composant DebugAuth en haut à droite</li>
+                        <li>Cliquez sur "Admin" dans la navigation</li>
+                        <li>Observez si vous êtes redirigé vers la page d'accueil</li>
+                    </ol>
+                    <p><strong>Note:</strong> Ouvrez la console du navigateur (F12) pour voir les logs de débogage</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

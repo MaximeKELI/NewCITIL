@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Admin Redirect</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Admin Redirect</h1>
+    
+    <div class="test info">
+        <h3>Problème identifié</h3>
+        <p>Quand on clique sur "admin", ça redirige vers la page d'accueil au lieu d'afficher la page admin.</p>
+        <p><strong>Causes possibles :</strong></p>
+        <ul>
+            <li>L'utilisateur n'est pas correctement chargé dans l'AuthContext</li>
+            <li>Le token a expiré</li>
+            <li>Le rôle n'est pas correctement vérifié</li>
+            <li>Problème de timing dans le chargement de l'authentification</li>
+        </ul>
+    </div>
+    
+    <div class="test info">
+        <h3>Solution appliquée</h3>
+        <ol>
+            <li>✅ Ajout de logs de débogage dans ProtectedRoute</li>
+            <li>✅ Amélioration de l'AuthContext pour vérifier la validité du token</li>
+            <li>✅ Ajout d'un composant DebugAuth pour voir l'état en temps réel</li>
+        </ol>
+    </div>
+    
+    <div class="test info">
+        <h3>Test de la solution</h3>
+        <button onclick="runTest()">Lancer le test complet</button>
+        <div id="testResult"></div>
+    </div>
+
+    <script>
+        async function runTest() {
+            const result = document.getElementById('testResult');
+            result.innerHTML = '<div class="info">🔄 Test en cours...</div>';
+            
+            let steps = [];
+            
+            // Étape 1: Connexion admin
+            try {
+                const loginResponse = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok) {
+                    steps.push('✅ Connexion admin réussie');
+                    
+                    // Stocker les données
+                    localStorage.setItem('citil_token', loginData.token);
+                    localStorage.setItem('citil_user', JSON.stringify(loginData.user_info));
+                    
+                    // Étape 2: Vérification du rôle
+                    if (loginData.user_info.role === 'admin') {
+                        steps.push('✅ Rôle admin confirmé');
+                        
+                        // Étape 3: Test de la page admin
+                        try {
+                            const pageResponse = await fetch('http://localhost:3000/admin', {
+                                method: 'GET',
+                                headers: { 'Accept': 'text/html' }
+                            });
+                            
+                            if (pageResponse.ok) {
+                                steps.push('✅ Page admin accessible');
+                                
+                                // Étape 4: Vérification du contenu React
+                                const html = await pageResponse.text();
+                                if (html.includes('id="root"')) {
+                                    steps.push('✅ React root détecté');
+                                } else {
+                                    steps.push('❌ React root non détecté');
+                                }
+                                
+                            } else {
+                                steps.push('❌ Page admin inaccessible (status: ' + pageResponse.status + ')');
+                            }
+                        } catch (error) {
+                            steps.push('❌ Erreur de chargement de la page admin: ' + error.message);
+                        }
+                        
+                    } else {
+                        steps.push('❌ Rôle non admin: ' + loginData.user_info.role);
+                    }
+                    
+                } else {
+                    steps.push('❌ Erreur de connexion: ' + loginData.message);
+                }
+                
+            } catch (error) {
+                steps.push('❌ Erreur réseau: ' + error.message);
+            }
+            
+            // Afficher les résultats
+            let resultHtml = '<h4>Résultats du test:</h4>';
+            steps.forEach(step => {
+                const isSuccess = step.startsWith('✅');
+                resultHtml += `<div class="${isSuccess ? 'success' : 'error'}">${step}</div>`;
+            });
+            
+            // Ajouter les instructions de test manuel
+            if (steps.some(s => s.includes('✅ Rôle admin confirmé'))) {
+                resultHtml += `
+                    <div class="info">
+                        <h4>Test manuel à effectuer :</h4>
+                        <ol>
+                            <li>Ouvrez <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                            <li>Regardez le composant DebugAuth en haut à droite</li>
+                            <li>Vérifiez que l'utilisateur admin est bien chargé</li>
+                            <li>Cliquez sur "Admin" dans la navigation</li>
+                            <li>Observez si vous êtes redirigé vers la page d'accueil</li>
+                        </ol>
+                        <p><strong>Note:</strong> Ouvrez la console du navigateur (F12) pour voir les logs de débogage</p>
+                    </div>
+                `;
+            }
+            
+            result.innerHTML = resultHtml;
+        }
+    </script>
+</body>
+</html>

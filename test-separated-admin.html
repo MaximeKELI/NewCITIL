@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Séparé</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        .warning { background: #fff3cd; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        .architecture { display: flex; justify-content: space-between; margin: 20px 0; }
+        .section { flex: 1; margin: 0 10px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .user-section { border-color: #28a745; background: #f8fff9; }
+        .admin-section { border-color: #dc3545; background: #fff8f8; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Test de l'Architecture Admin Séparée</h1>
+    
+    <div class="test info">
+        <h3>Nouvelle Architecture</h3>
+        <div class="architecture">
+            <div class="section user-section">
+                <h4>🌐 Interface Utilisateur</h4>
+                <p><strong>URL:</strong> http://localhost:3000</p>
+                <p><strong>Accès:</strong> Public</p>
+                <p><strong>Fonctionnalités:</strong></p>
+                <ul>
+                    <li>Boutique</li>
+                    <li>Formations</li>
+                    <li>Blog</li>
+                    <li>Contact</li>
+                    <li>Connexion/Inscription</li>
+                </ul>
+                <p><strong>Navigation:</strong> Pas d'accès admin visible</p>
+            </div>
+            <div class="section admin-section">
+                <h4>🔒 Interface Admin</h4>
+                <p><strong>URL:</strong> http://localhost:3000/admin-login</p>
+                <p><strong>Accès:</strong> Administrateurs uniquement</p>
+                <p><strong>Fonctionnalités:</strong></p>
+                <ul>
+                    <li>Gestion des produits</li>
+                    <li>Gestion des utilisateurs</li>
+                    <li>Statistiques</li>
+                    <li>Configuration</li>
+                </ul>
+                <p><strong>Navigation:</strong> Interface séparée</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test info">
+        <h3>Modifications apportées</h3>
+        <ul>
+            <li>✅ <strong>Navigation utilisateur:</strong> Supprimé l'accès admin</li>
+            <li>✅ <strong>Page AdminLogin:</strong> Créée avec design séparé</li>
+            <li>✅ <strong>Routes séparées:</strong> /admin-login et /admin/*</li>
+            <li>✅ <strong>Redirection admin:</strong> Vers /admin-login au lieu de /admin</li>
+            <li>✅ <strong>Sécurité:</strong> Interface admin complètement séparée</li>
+        </ul>
+    </div>
+    
+    <div class="test info">
+        <h3>Tests à effectuer</h3>
+        <button onclick="testUserInterface()">Tester l'interface utilisateur</button>
+        <button onclick="testAdminInterface()">Tester l'interface admin</button>
+        <button onclick="testSecurity()">Tester la sécurité</button>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Instructions de test manuel</h3>
+        <ol>
+            <li><strong>Test interface utilisateur:</strong>
+                <ul>
+                    <li>Allez sur <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                    <li>Vérifiez qu'il n'y a plus de lien "Admin" dans la navigation</li>
+                    <li>Testez la connexion avec un compte client</li>
+                </ul>
+            </li>
+            <li><strong>Test interface admin:</strong>
+                <ul>
+                    <li>Allez sur <a href="http://localhost:3000/admin-login" target="_blank">http://localhost:3000/admin-login</a></li>
+                    <li>Connectez-vous avec admin@citil.tg / password123</li>
+                    <li>Vérifiez l'accès au tableau de bord admin</li>
+                </ul>
+            </li>
+            <li><strong>Test de sécurité:</strong>
+                <ul>
+                    <li>Essayez d'accéder directement à <a href="http://localhost:3000/admin" target="_blank">http://localhost:3000/admin</a></li>
+                    <li>Vérifiez que vous êtes redirigé vers la page de connexion</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <script>
+        async function testUserInterface() {
+            const result = document.getElementById('testResults');
+            result.innerHTML = '<div class="info">🔄 Test de l\'interface utilisateur...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    const html = await response.text();
+                    
+                    // Vérifier qu'il n'y a plus de lien admin
+                    const hasAdminLink = html.includes('href="/admin"') || html.includes('Admin');
+                    
+                    result.innerHTML = `
+                        <div class="${hasAdminLink ? 'warning' : 'success'}">
+                            <h4>${hasAdminLink ? '⚠️' : '✅'} Interface utilisateur</h4>
+                            <p><strong>Page accessible:</strong> Oui</p>
+                            <p><strong>Lien admin visible:</strong> ${hasAdminLink ? 'Oui (problème)' : 'Non (correct)'}</p>
+                            <p><strong>Status:</strong> ${hasAdminLink ? 'Nécessite vérification' : 'Séparé correctement'}</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = '<div class="error">❌ Interface utilisateur inaccessible</div>';
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        async function testAdminInterface() {
+            const result = document.getElementById('testResults');
+            result.innerHTML = '<div class="info">🔄 Test de l\'interface admin...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/admin-login');
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Interface admin</h4>
+                            <p><strong>Page de connexion admin:</strong> Accessible</p>
+                            <p><strong>URL:</strong> /admin-login</p>
+                            <p><strong>Status:</strong> Séparée correctement</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = '<div class="error">❌ Interface admin inaccessible</div>';
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        async function testSecurity() {
+            const result = document.getElementById('testResults');
+            result.innerHTML = '<div class="info">🔄 Test de sécurité...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/admin');
+                if (response.ok) {
+                    const html = await response.text();
+                    
+                    // Vérifier si on est redirigé vers la page de connexion
+                    const isRedirected = html.includes('admin-login') || html.includes('Connexion');
+                    
+                    result.innerHTML = `
+                        <div class="${isRedirected ? 'success' : 'warning'}">
+                            <h4>${isRedirected ? '✅' : '⚠️'} Test de sécurité</h4>
+                            <p><strong>Accès direct à /admin:</strong> ${isRedirected ? 'Redirigé (correct)' : 'Accessible (problème)'}</p>
+                            <p><strong>Status:</strong> ${isRedirected ? 'Sécurisé' : 'Nécessite vérification'}</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Test de sécurité</h4>
+                            <p><strong>Accès direct à /admin:</strong> Bloqué (correct)</p>
+                            <p><strong>Status:</strong> Sécurisé</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ApiService } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.js';
 
 export default function Register() {
 	const navigate = useNavigate();
+	const { register } = useAuth();
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -16,6 +17,19 @@ export default function Register() {
 		setError('');
 		setLoading(true);
 		
+		// Validation côté client
+		if (name.length < 4) {
+			setError('Le nom doit contenir au moins 4 caractères');
+			setLoading(false);
+			return;
+		}
+		
+		if (password.length < 8) {
+			setError('Le mot de passe doit contenir au moins 8 caractères');
+			setLoading(false);
+			return;
+		}
+		
 		if (password !== passwordConfirmation) {
 			setError('Les mots de passe ne correspondent pas');
 			setLoading(false);
@@ -23,9 +37,19 @@ export default function Register() {
 		}
 		
 		try {
-			await ApiService.register(name, email, password, passwordConfirmation);
-			navigate('/');
+			console.log('Tentative d\'inscription:', { name, email, password, passwordConfirmation });
+			const result = await register(name, email, password, passwordConfirmation);
+			
+			// Rediriger selon le rôle de l'utilisateur créé
+			if (result.user && result.user.role === 'admin') {
+				console.log('Utilisateur admin créé, redirection vers /admin-login');
+				navigate('/admin-login');
+			} else {
+				console.log('Utilisateur client créé, redirection vers /');
+				navigate('/');
+			}
 		} catch (err) {
+			console.error('Erreur d\'inscription:', err);
 			setError(err.message || 'Erreur d\'inscription');
 		} finally {
 			setLoading(false);

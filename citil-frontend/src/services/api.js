@@ -285,7 +285,7 @@ const mockDelay = (ms = 500) => new Promise(res => setTimeout(res, ms));
 // Structure des données moquées pour toutes les interfaces
 
 // PRODUITS
-const mockProducts = [
+let mockProducts = [
     { id: 1, name: 'Arduino Uno R3', price: 12000, image: '/assets/images/arduino_uno.jpg', stock: 15, description: 'Carte de prototypage idéale pour apprendre l’électronique et la programmation.', category: 'Arduino' },
     { id: 2, name: 'Capteur DS18B20', price: 3500, image: '/assets/images/capteur_ds18b20.jpg', stock: 42, description: 'Capteur de température numérique précis pour projets IoT.', category: 'Capteurs' },
     { id: 3, name: 'Kit Robot Éducatif', price: 65000, image: '/assets/images/kit_robot_educatif.jpg', stock: 8, description: 'Kit complet pour découvrir la robotique avec des ateliers pratiques.', category: 'Kits' },
@@ -360,12 +360,14 @@ export const ApiService = {
     
     register: async (name, email, password, password_confirmation) => {
         try {
+            console.log('Envoi des données d\'inscription:', { name, email, password, password_confirmation });
             const response = await api.post('/api/register', { 
                 name, 
                 email, 
                 password, 
                 password_confirmation 
             });
+            console.log('Réponse d\'inscription:', response.data);
             const { token, user_info } = response.data;
             
             localStorage.setItem('citil_token', token);
@@ -374,7 +376,13 @@ export const ApiService = {
             
             return { token, user: user_info };
         } catch (error) {
+            console.error('Erreur API d\'inscription:', error.response?.data);
             const message = error.response?.data?.message || 'Erreur d\'inscription';
+            const errors = error.response?.data?.errors;
+            if (errors) {
+                const errorMessages = Object.values(errors).flat().join(', ');
+                throw new Error(errorMessages);
+            }
             throw new Error(message);
         }
     },
@@ -390,6 +398,16 @@ export const ApiService = {
             window.dispatchEvent(new Event('authChanged'));
         }
         return true;
+    },
+
+    getUserInfo: async () => {
+        try {
+            const response = await api.get('/api/user');
+            return response.data;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Erreur lors de la récupération des informations utilisateur';
+            throw new Error(message);
+        }
     },
 
     updateProfile: async (profileData) => {
@@ -410,7 +428,7 @@ export const ApiService = {
                 formData.append('avatar', profileData.avatar);
             }
             
-            const response = await api.put('/api/profile', formData, {
+            const response = await api.post('/api/profile', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Redirect Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        .flow { display: flex; align-items: center; margin: 10px 0; }
+        .flow-step { padding: 10px; margin: 0 5px; background: #f8f9fa; border-radius: 5px; }
+        .arrow { font-size: 20px; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test du flux de redirection Admin</h1>
+    
+    <div class="test info">
+        <h3>Flux de redirection attendu</h3>
+        <div class="flow">
+            <div class="flow-step">1. Inscription/Connexion Admin</div>
+            <div class="arrow">→</div>
+            <div class="flow-step">2. Vérification du rôle</div>
+            <div class="arrow">→</div>
+            <div class="flow-step">3. Redirection vers /admin</div>
+        </div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test de connexion admin</h3>
+        <button onclick="testAdminLogin()">Tester la connexion admin</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test de redirection après connexion</h3>
+        <button onclick="testRedirectAfterLogin()">Tester la redirection</button>
+        <div id="redirectResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Test manuel complet</h3>
+        <button onclick="runManualTest()">Lancer le test manuel</button>
+        <div id="manualResult"></div>
+    </div>
+
+    <script>
+        async function testAdminLogin() {
+            const result = document.getElementById('loginResult');
+            result.innerHTML = 'Test de connexion admin...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.tg',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('citil_token', data.token);
+                    localStorage.setItem('citil_user', JSON.stringify(data.user_info));
+                    
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Connexion admin réussie</h4>
+                            <p><strong>Utilisateur:</strong> ${data.user_info.name}</p>
+                            <p><strong>Rôle:</strong> ${data.user_info.role}</p>
+                            <p><strong>Email:</strong> ${data.user_info.email}</p>
+                            <p><strong>Redirection attendue:</strong> /admin</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur de connexion</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        function testRedirectAfterLogin() {
+            const result = document.getElementById('redirectResult');
+            
+            const user = JSON.parse(localStorage.getItem('citil_user') || '{}');
+            
+            if (!user || !user.role) {
+                result.innerHTML = '<div class="error">❌ Aucun utilisateur connecté. Veuillez d\'abord vous connecter.</div>';
+                return;
+            }
+            
+            if (user.role === 'admin') {
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Test de redirection</h4>
+                        <p><strong>Utilisateur:</strong> ${user.name} (${user.role})</p>
+                        <p><strong>Redirection attendue:</strong> /admin</p>
+                        <p><strong>Test manuel:</strong> Allez sur <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a> et connectez-vous</p>
+                    </div>
+                `;
+            } else {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Utilisateur non admin</h4>
+                        <p>Rôle actuel: ${user.role}</p>
+                        <p>Redirection attendue: / (page d'accueil)</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function runManualTest() {
+            const result = document.getElementById('manualResult');
+            
+            result.innerHTML = `
+                <div class="info">
+                    <h4>🧪 Test manuel à effectuer</h4>
+                    <ol>
+                        <li><strong>Test de connexion admin:</strong>
+                            <ul>
+                                <li>Allez sur <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a></li>
+                                <li>Connectez-vous avec admin@citil.tg / password123</li>
+                                <li>Vérifiez que vous êtes redirigé vers /admin</li>
+                            </ul>
+                        </li>
+                        <li><strong>Test d'inscription admin:</strong>
+                            <ul>
+                                <li>Allez sur <a href="http://localhost:3000/register" target="_blank">http://localhost:3000/register</a></li>
+                                <li>Créez un compte avec un email admin (vous devrez modifier le backend pour accepter admin)</li>
+                                <li>Vérifiez que vous êtes redirigé vers /admin</li>
+                            </ul>
+                        </li>
+                        <li><strong>Test de connexion client:</strong>
+                            <ul>
+                                <li>Créez un compte client normal</li>
+                                <li>Connectez-vous</li>
+                                <li>Vérifiez que vous êtes redirigé vers / (page d'accueil)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p><strong>Note:</strong> Ouvrez la console du navigateur (F12) pour voir les logs de débogage</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
