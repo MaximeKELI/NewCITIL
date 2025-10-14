@@ -35,7 +35,7 @@ export default function Contact() {
 			</form>
 			<section className="mt-8 rounded-lg border bg-[#F9F9EA] p-6">
 				<h2 className="font-semibold text-[#2C3E50]">Nos coordonnées</h2>
-				<p className="text-sm text-gray-700 mt-2">Lomé, Togo • +228 90 00 00 00 • contact@citil.tg</p>
+				<p className="text-sm text-gray-700 mt-2">Lomé, Togo • +228 90 01 38 02/91 12 05 00 • mpad.leadertech@gmail.com</p>
 			</section>
 		</div>
 	);
