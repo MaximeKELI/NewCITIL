@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TrainingController;
 use App\Http\Controllers\Api\BlogPostController;
+use App\Http\Controllers\Api\BlogCategoryController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\InternshipApplicationController;
@@ -56,6 +57,9 @@ Route::get('/trainings/{id}', [TrainingController::class, 'show']);
 // Blog
 Route::get('/blog-posts', [BlogPostController::class, 'index']);
 Route::get('/blog-posts/{id}', [BlogPostController::class, 'show']);
+
+// Blog Categories
+Route::get('/blog-categories', [BlogCategoryController::class, 'index']);
 
 // Projets
 Route::get('/projects', [ProjectController::class, 'index']);
