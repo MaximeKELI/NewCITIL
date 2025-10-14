@@ -10,7 +10,7 @@ export default function TrainingsAdmin() {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', price: '', duration: '', date: '', image: '', imageFile: null, max: '' });
+  const [form, setForm] = useState({ title: '', description: '', price: '', duration_hours: '', start_date: '', schedule: '', image: '', imageFile: null, is_active: true });
   const [errors, setErrors] = useState({});
 
   useEffect(() => { ApiService.getTrainings().then(setItems); }, []);
@@ -18,15 +18,15 @@ export default function TrainingsAdmin() {
   const validate = (v) => {
     const e = {};
     if (!v.title) e.title = 'Titre requis';
-    if (!v.date) e.date = 'Date requise';
+    if (!v.start_date) e.start_date = 'Date requise';
     if (!v.price || Number(v.price) <= 0) e.price = 'Prix invalide';
-    if (!v.duration) e.duration = 'Durée requise';
+    if (!v.duration_hours) e.duration_hours = 'Durée requise';
     if (!v.image && !v.imageFile) e.image = 'Image requise';
     return e;
   };
 
-  function openCreate() { setEditing(null); setForm({ title: '', description: '', price: '', duration: '', date: '', image: '', imageFile: null, max: '' }); setErrors({}); setOpen(true); }
-  function openEdit(t) { setEditing(t); setForm({ title: t.title, description: t.description || '', price: t.price, duration: t.duration, date: t.date, image: t.image || '', imageFile: null, max: t.max || '' }); setErrors({}); setOpen(true); }
+  function openCreate() { setEditing(null); setForm({ title: '', description: '', price: '', duration_hours: '', start_date: '', schedule: '', image: '', imageFile: null, is_active: true }); setErrors({}); setOpen(true); }
+  function openEdit(t) { setEditing(t); setForm({ title: t.title, description: t.description || '', price: t.price, duration_hours: t.duration_hours, start_date: t.start_date, schedule: t.schedule || '', image: t.image || '', imageFile: null, is_active: t.is_active }); setErrors({}); setOpen(true); }
 
   function onFileChange(e) {
     const file = e.target.files?.[0] || null;
@@ -67,7 +67,7 @@ export default function TrainingsAdmin() {
               <TH>Date</TH>
               <TH>Durée</TH>
               <TH>Prix</TH>
-              <TH>Places max</TH>
+              <TH>Horaires</TH>
               <TH>Actions</TH>
             </TR>
           </THead>
@@ -78,10 +78,10 @@ export default function TrainingsAdmin() {
                   {t.image && <img src={t.image} alt="" className="h-8 w-8 object-cover rounded" />}
                   <span className="truncate">{t.title}</span>
                 </TD>
-                <TD>{t.date}</TD>
-                <TD>{t.duration}</TD>
+                <TD>{t.start_date}</TD>
+                <TD>{t.duration_hours}h</TD>
                 <TD>{Number(t.price).toLocaleString()} CFA</TD>
-                <TD>{t.max || '-'}</TD>
+                <TD>{t.schedule || '-'}</TD>
                 <TD className="space-x-2">
                   <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(t)}>Modifier</Button>
                   <Button className="px-2 py-1 text-xs" onClick={() => onDelete(t.id)}>Supprimer</Button>
@@ -107,14 +107,14 @@ export default function TrainingsAdmin() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="date">Date de début</Label>
-              <Input id="date" type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
-              <FieldError>{errors.date}</FieldError>
+              <Label htmlFor="start_date">Date de début</Label>
+              <Input id="start_date" type="date" value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} required />
+              <FieldError>{errors.start_date}</FieldError>
             </div>
             <div>
-              <Label htmlFor="duration">Durée</Label>
-              <Input id="duration" value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} placeholder="ex: 2 jours" required />
-              <FieldError>{errors.duration}</FieldError>
+              <Label htmlFor="duration_hours">Durée (heures)</Label>
+              <Input id="duration_hours" type="number" value={form.duration_hours} onChange={e => setForm({ ...form, duration_hours: e.target.value })} placeholder="ex: 20" required />
+              <FieldError>{errors.duration_hours}</FieldError>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -124,8 +124,8 @@ export default function TrainingsAdmin() {
               <FieldError>{errors.price}</FieldError>
             </div>
             <div>
-              <Label htmlFor="max">Places max</Label>
-              <Input id="max" type="number" value={form.max} onChange={e => setForm({ ...form, max: e.target.value })} />
+              <Label htmlFor="schedule">Horaires</Label>
+              <Input id="schedule" value={form.schedule} onChange={e => setForm({ ...form, schedule: e.target.value })} placeholder="ex: Lun-Ven 18h-20h" />
             </div>
           </div>
           <div>
@@ -137,6 +137,10 @@ export default function TrainingsAdmin() {
               </div>
             )}
             <FieldError>{errors.image}</FieldError>
+          </div>
+          <div className="flex items-center gap-2">
+            <input id="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
+            <label htmlFor="is_active" className="text-sm">Formation active</label>
           </div>
         </form>
       </Modal>

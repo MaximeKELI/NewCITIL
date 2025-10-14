@@ -449,160 +449,207 @@ export const ApiService = {
 
     // --- PRODUITS ---
     getProducts: async () => {
-        try {
-            const response = await api.get('/api/products');
-            return response.data;
-        } catch (error) {
-            console.error('Erreur lors de la récupération des produits:', error);
-            // Fallback vers les données mockées en cas d'erreur
-            return mockProducts;
-        }
+        const response = await api.get('/api/products');
+        return response.data;
     },
     getProduct: async (id) => {
-        try {
-            const response = await api.get(`/api/products/${id}`);
-            return response.data;
-        } catch (error) {
-            console.error('Erreur lors de la récupération du produit:', error);
-            // Fallback vers les données mockées en cas d'erreur
-            const product = mockProducts.find(p => p.id === Number(id));
-            if (!product) throw new Error('Produit non trouvé');
-            return product;
-        }
+        const response = await api.get(`/api/products/${id}`);
+        return response.data;
     },
     createProduct: async (product) => {
-        await mockDelay();
-        const newId = mockProducts.length + 1;
-        const newProduct = { id: newId, ...product, stock: 1, image: product.imageFile ? '/assets/images/new_product.jpg' : null };
-        mockProducts.push(newProduct);
-        return newProduct;
+        const formData = new FormData();
+        Object.entries(product || {}).forEach(([key, value]) => {
+            if (key === 'imageFile' && value instanceof File) {
+                formData.append('image', value);
+            } else if (key !== 'imageFile' && value !== undefined && value !== null) {
+                formData.append(key, value);
+            }
+        });
+        const { data } = await api.post('/api/admin/products', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        return data;
     },
     updateProduct: async (id, updates) => {
-        await mockDelay();
-        const index = mockProducts.findIndex(p => p.id === Number(id));
-        if (index === -1) throw new Error('Produit non trouvé (Mock)');
-        const updatedProduct = { ...mockProducts[index], ...updates };
-        mockProducts[index] = updatedProduct;
-        return updatedProduct;
+        const formData = new FormData();
+        Object.entries(updates || {}).forEach(([key, value]) => {
+            if (key === 'imageFile' && value instanceof File) {
+                formData.append('image', value);
+            } else if (key !== 'imageFile' && value !== undefined && value !== null) {
+                formData.append(key, value);
+            }
+        });
+        formData.append('_method', 'PUT');
+        const { data } = await api.post(`/api/admin/products/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        return data;
     },
     deleteProduct: async (id) => {
-        await mockDelay();
-        mockProducts = mockProducts.filter(p => p.id !== Number(id));
+        await api.delete(`/api/admin/products/${id}`);
         return true;
     },
 
     // --- FORMATIONS ---
     getTrainings: async () => {
-        await mockDelay();
-        return mockTrainings;
+        const response = await api.get('/api/trainings');
+        return response.data;
     },
     createTraining: async (training) => {
-        await mockDelay();
-        const newId = mockTrainings.length + 1;
-        const newTraining = { id: newId, ...training, image: training.imageFile ? '/assets/images/new_training.jpg' : null };
-        mockTrainings.push(newTraining);
-        return newTraining;
+        try {
+            const formData = new FormData();
+            Object.keys(training).forEach(key => {
+                if (key === 'imageFile' && training[key] instanceof File) {
+                    formData.append('image', training[key]);
+                } else if (key !== 'imageFile' && training[key] !== null && training[key] !== undefined) {
+                    formData.append(key, training[key]);
+                }
+            });
+            
+            const response = await api.post('/api/admin/trainings', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Erreur lors de la création de la formation:', error);
+            throw error;
+        }
     },
     updateTraining: async (id, updates) => {
-        await mockDelay();
-        const index = mockTrainings.findIndex(t => t.id === Number(id));
-        if (index === -1) throw new Error('Formation non trouvée (Mock)');
-        const updatedTraining = { ...mockTrainings[index], ...updates };
-        mockTrainings[index] = updatedTraining;
-        return updatedTraining;
+        try {
+            const formData = new FormData();
+            Object.keys(updates).forEach(key => {
+                if (key === 'imageFile' && updates[key] instanceof File) {
+                    formData.append('image', updates[key]);
+                } else if (key !== 'imageFile' && updates[key] !== null && updates[key] !== undefined) {
+                    formData.append(key, updates[key]);
+                }
+            });
+            formData.append('_method', 'PUT');
+            
+            const response = await api.post(`/api/admin/trainings/${id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour de la formation:', error);
+            throw error;
+        }
     },
     deleteTraining: async (id) => {
-        await mockDelay();
-        mockTrainings = mockTrainings.filter(t => t.id !== Number(id));
-        return true;
+        try {
+            await api.delete(`/api/admin/trainings/${id}`);
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de la suppression de la formation:', error);
+            throw error;
+        }
     },
 
     // --- BLOG ARTICLES (POSTS) ---
     getBlogPosts: async () => {
-        await mockDelay();
-        return mockPosts;
+        const response = await api.get('/api/blog-posts');
+        return response.data;
     },
     createBlogPost: async (post) => {
-        await mockDelay();
-        const newId = mockPosts.length + 1;
-        const newPost = { id: newId, ...post, image: post.imageFile ? '/assets/images/new_post.jpg' : null };
-        mockPosts.push(newPost);
-        return newPost;
+        try {
+            const formData = new FormData();
+            Object.keys(post).forEach(key => {
+                if (key === 'imageFile' && post[key] instanceof File) {
+                    formData.append('image', post[key]);
+                } else if (key !== 'imageFile' && post[key] !== null && post[key] !== undefined) {
+                    formData.append(key, post[key]);
+                }
+            });
+            
+            const response = await api.post('/api/admin/blog-posts', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Erreur lors de la création de l\'article:', error);
+            throw error;
+        }
     },
     updateBlogPost: async (id, updates) => {
-        await mockDelay();
-        const index = mockPosts.findIndex(p => p.id === Number(id));
-        if (index === -1) throw new Error('Article non trouvé (Mock)');
-        const updatedPost = { ...mockPosts[index], ...updates };
-        mockPosts[index] = updatedPost;
-        return updatedPost;
+        try {
+            const formData = new FormData();
+            Object.keys(updates).forEach(key => {
+                if (key === 'imageFile' && updates[key] instanceof File) {
+                    formData.append('image', updates[key]);
+                } else if (key !== 'imageFile' && updates[key] !== null && updates[key] !== undefined) {
+                    formData.append(key, updates[key]);
+                }
+            });
+            formData.append('_method', 'PUT');
+            
+            const response = await api.post(`/api/admin/blog-posts/${id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour de l\'article:', error);
+            throw error;
+        }
     },
     deleteBlogPost: async (id) => {
-        await mockDelay();
-        mockPosts = mockPosts.filter(p => p.id !== Number(id));
-        return true;
+        try {
+            await api.delete(`/api/admin/blog-posts/${id}`);
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de la suppression de l\'article:', error);
+            throw error;
+        }
     },
 
     // --- CATÉGORIES PRODUITS ---
     getCategories: async () => {
-        await mockDelay();
-        return mockCategories;
+        const { data } = await api.get('/api/categories');
+        return data;
     },
     createCategory: async (payload) => {
-        await mockDelay();
-        const newId = mockCategories.length + 1;
-        const newCategory = { id: newId, ...payload };
-        mockCategories.push(newCategory);
-        return newCategory;
+        const { data } = await api.post('/api/admin/categories', payload);
+        return data;
     },
     updateCategory: async (id, updates) => {
-        await mockDelay();
-        const index = mockCategories.findIndex(c => c.id === Number(id));
-        if (index === -1) throw new Error('Catégorie non trouvée (Mock)');
-        const updatedCategory = { ...mockCategories[index], ...updates };
-        mockCategories[index] = updatedCategory;
-        return updatedCategory;
+        const { data } = await api.post(`/api/admin/categories/${id}`, { ...updates, _method: 'PUT' });
+        return data;
     },
     deleteCategory: async (id) => {
-        await mockDelay();
-        mockCategories = mockCategories.filter(c => c.id !== Number(id));
+        await api.delete(`/api/admin/categories/${id}`);
         return true;
     },
 
     // --- CANDIDATURES/UTILISATEURS/DIVERS ADMIN ---
     submitInternshipApplication: async ({ name, email, message, cvFile }) => {
-        await mockDelay();
-        const newId = mockApplications.length + 1;
-        const newApp = { id: newId, name, email, message, cvUrl: cvFile ? '/assets/cv/nouveau.pdf' : null, status: 'En attente' };
-        mockApplications.push(newApp);
-        return { message: 'Candidature soumise avec succès (Mock) !', application: newApp };
+        const fd = new FormData();
+        if (name) fd.append('full_name', name);
+        if (email) fd.append('email', email);
+        if (message) fd.append('message', message);
+        if (cvFile instanceof File) fd.append('cv_path', 'uploads/cv-placeholder.pdf');
+        // Status par défaut si requis par l'API
+        fd.append('phone', '');
+        fd.append('status', 'received');
+        const { data } = await api.post('/api/internship-applications', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        return data;
     },
     
     // Fonctions de l'admin déjà moquées
     getUsers: async () => {
-        await mockDelay(300);
-        return mockUsers;
+        const { data } = await api.get('/api/admin/users');
+        return data;
     },
     getApplications: async () => {
-        await mockDelay(300);
-        return mockApplications;
+        const { data } = await api.get('/api/admin/internship-applications');
+        return data;
     },
     updateApplicationStatus: async (id, status) => {
-        await mockDelay(300);
-        const idx = mockApplications.findIndex(a => a.id === Number(id));
-        if (idx >= 0) {
-            mockApplications[idx] = { ...mockApplications[idx], status };
-            return mockApplications[idx];
-        }
-        throw new Error('Candidature introuvable (Mock)');
+        const { data } = await api.post(`/api/admin/internship-applications/${id}`, { status, _method: 'PUT' });
+        return data;
     },
     getBlogCategories: async () => {
-        await mockDelay(200);
-        return mockBlogCategories; 
+        const response = await api.get('/api/blog-categories');
+        return response.data;
     },
     createOrder: async (order) => {
-        await mockDelay(500);
-        return { success: true, orderId: Math.floor(Math.random() * 100000) };
+        const { data } = await api.post('/api/admin/orders', order);
+        return data;
     },
 };
 

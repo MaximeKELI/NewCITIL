@@ -9,7 +9,7 @@ import { ApiService } from '../../services/api.js';
 export default function BlogAdmin() {
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', excerpt: '', image: '', imageFile: null, category: '', published: false });
+  const [form, setForm] = useState({ title: '', excerpt: '', content: '', image: '', imageFile: null, blog_category_id: '', author: 'Admin', published: false });
   const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
 
@@ -22,12 +22,14 @@ export default function BlogAdmin() {
     const e = {};
     if (!v.title) e.title = 'Titre requis';
     if (!v.excerpt) e.excerpt = 'Extrait requis';
+    if (!v.content) e.content = 'Contenu requis';
+    if (!v.blog_category_id) e.blog_category_id = 'Catégorie requise';
     if (!v.image && !v.imageFile) e.image = 'Image requise';
     return e;
   }
 
   function openCreate() {
-    setForm({ title: '', excerpt: '', image: '', imageFile: null, category: categories[0]?.slug || '', published: false });
+    setForm({ title: '', excerpt: '', content: '', image: '', imageFile: null, blog_category_id: categories[0]?.id || '', author: 'Admin', published: false });
     setErrors({});
     setOpen(true);
   }
@@ -71,8 +73,8 @@ export default function BlogAdmin() {
                   <span className="truncate">{p.title}</span>
                 </TD>
                 <TD>{p.author || 'Admin'}</TD>
-                <TD>{p.date || '-'}</TD>
-                <TD>{p.status || (p.published ? 'Publié' : 'Brouillon')}</TD>
+                <TD>{p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}</TD>
+                <TD>{p.published ? 'Publié' : 'Brouillon'}</TD>
               </TR>
             ))}
           </TBody>
@@ -103,12 +105,19 @@ export default function BlogAdmin() {
             )}
             <FieldError>{errors.image}</FieldError>
           </div>
+          <div>
+            <Label htmlFor="content">Contenu</Label>
+            <TextArea id="content" value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={6} required />
+            <FieldError>{errors.content}</FieldError>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="category">Catégorie</Label>
-              <Select id="category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-                {categories.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+              <Label htmlFor="blog_category_id">Catégorie</Label>
+              <Select id="blog_category_id" value={form.blog_category_id} onChange={e => setForm({ ...form, blog_category_id: e.target.value })}>
+                <option value="">Sélectionner une catégorie</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Select>
+              <FieldError>{errors.blog_category_id}</FieldError>
             </div>
             <div className="flex items-center gap-2 pt-6">
               <input id="published" type="checkbox" checked={form.published} onChange={e => setForm({ ...form, published: e.target.checked })} />
