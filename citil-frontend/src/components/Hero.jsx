@@ -75,17 +75,6 @@ export default function Hero() {
 				transition={{ delay: 0.2, duration: 0.8 }}
 				className="relative z-10 text-center px-6 max-w-6xl mx-auto"
 			>
-				<motion.div
-					initial={{ scale: 0.8, opacity: 0 }}
-					whileInView={{ scale: 1, opacity: 1 }}
-					viewport={{ once: true }}
-					transition={{ delay: 0.4, duration: 0.6 }}
-					className="mb-8"
-				>
-					<div className="w-20 h-20 bg-gradient-to-br from-[#3498DB] to-[#2980B9] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
-						<span className="text-white text-2xl font-bold">C</span>
-					</div>
-				</motion.div>
 
 				<motion.h1 
 					initial={{ opacity: 0, y: 30 }}
