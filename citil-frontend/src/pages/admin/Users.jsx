@@ -41,15 +41,23 @@ export default function UsersAdmin() {
             </TR>
           </THead>
           <TBody>
-            {filtered.map(u => (
-              <TR key={u.id}>
-                <TD className="font-medium">{u.name}</TD>
-                <TD>{u.email}</TD>
-                <TD>{u.phone || '-'}</TD>
-                <TD className="capitalize">{u.role}</TD>
-                <TD>{u.createdAt}</TD>
+            {filtered.length === 0 ? (
+              <TR>
+                <TD colSpan="5" className="text-center py-8 text-gray-500">
+                  Aucun utilisateur trouvé.
+                </TD>
               </TR>
-            ))}
+            ) : (
+              filtered.map(u => (
+                <TR key={u.id}>
+                  <TD className="font-medium">{u.name}</TD>
+                  <TD>{u.email}</TD>
+                  <TD>{u.phone || '-'}</TD>
+                  <TD className="capitalize">{u.role}</TD>
+                  <TD>{u.createdAt}</TD>
+                </TR>
+              ))
+            )}
           </TBody>
         </Table>
       </Card>

@@ -3,10 +3,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
 import './styles/responsive.css';
-import DebugAuth from './components/DebugAuth.jsx';
-import AdminTestButton from './components/AdminTestButton.jsx';
-import ResponsiveTest from './components/ResponsiveTest.jsx';
-import ResponsiveDemo from './components/ResponsiveDemo.jsx';
 
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
@@ -35,6 +31,7 @@ import Contact from './pages/Contact.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
+import NotFound from './pages/NotFound.jsx';
 
 const PageWrapper = ({ children }) => (
 	<motion.main
@@ -98,10 +95,6 @@ function AppContent() {
 	const location = useLocation();
 	return (
 		<div className="flex min-h-screen flex-col">
-			<DebugAuth />
-			<AdminTestButton />
-			<ResponsiveTest />
-			<ResponsiveDemo />
 			<Navbar />
 			<ScrollToTop />
 			<AnimatePresence mode="wait">
@@ -134,7 +127,7 @@ function AppContent() {
 							<Route path="utilisateurs" element={<UsersAdmin />} />
 							<Route path="parametres" element={<SettingsAdmin />} />
 						</Route>
-						<Route path="*" element={<Navigate to="/" replace />} />
+						<Route path="*" element={<NotFound />} />
 					</Routes>
 				</PageWrapper>
 			</AnimatePresence>

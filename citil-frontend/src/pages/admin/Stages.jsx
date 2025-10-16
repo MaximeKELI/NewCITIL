@@ -3,7 +3,7 @@ import Card from '../../components/ui/Card.jsx';
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table.jsx';
 import Button from '../../components/Button.jsx';
 import Modal from '../../components/ui/Modal.jsx';
-import { Label, Input, TextArea, FieldError, Select } from '../../components/ui/FormInput.jsx';
+import { Label, Input, TextArea, FieldError } from '../../components/ui/FormInput.jsx';
 import { ApiService } from '../../services/api.js';
 
 export default function StagesAdmin() {

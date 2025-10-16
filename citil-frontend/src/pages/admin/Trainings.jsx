@@ -72,22 +72,30 @@ export default function TrainingsAdmin() {
             </TR>
           </THead>
           <TBody>
-            {items.map(t => (
-              <TR key={t.id}>
-                <TD className="font-medium max-w-[260px] truncate flex items-center gap-2">
-                  {t.image && <img src={t.image} alt="" className="h-8 w-8 object-cover rounded" />}
-                  <span className="truncate">{t.title}</span>
-                </TD>
-                <TD>{t.start_date}</TD>
-                <TD>{t.duration_hours}h</TD>
-                <TD>{Number(t.price).toLocaleString()} CFA</TD>
-                <TD>{t.schedule || '-'}</TD>
-                <TD className="space-x-2">
-                  <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(t)}>Modifier</Button>
-                  <Button className="px-2 py-1 text-xs" onClick={() => onDelete(t.id)}>Supprimer</Button>
+            {items.length === 0 ? (
+              <TR>
+                <TD colSpan="6" className="text-center py-8 text-gray-500">
+                  Aucune formation trouvée. Commencez par ajouter votre première formation.
                 </TD>
               </TR>
-            ))}
+            ) : (
+              items.map(t => (
+                <TR key={t.id}>
+                  <TD className="font-medium max-w-[260px] truncate flex items-center gap-2">
+                    {t.image && <img src={t.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                    <span className="truncate">{t.title}</span>
+                  </TD>
+                  <TD>{t.start_date}</TD>
+                  <TD>{t.duration_hours}h</TD>
+                  <TD>{Number(t.price).toLocaleString()} CFA</TD>
+                  <TD>{t.schedule || '-'}</TD>
+                  <TD className="space-x-2">
+                    <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(t)}>Modifier</Button>
+                    <Button className="px-2 py-1 text-xs" onClick={() => onDelete(t.id)}>Supprimer</Button>
+                  </TD>
+                </TR>
+              ))
+            )}
           </TBody>
         </Table>
       </Card>

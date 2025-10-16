@@ -53,4 +53,5 @@ export function FieldError({ children }) {
   return <p className="mt-1 text-xs text-red-600">{children}</p>;
 }
 
-export default { Label, Input, TextArea, Select, FieldError };
+const FormInput = { Label, Input, TextArea, Select, FieldError };
+export default FormInput;

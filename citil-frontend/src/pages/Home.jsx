@@ -311,6 +311,20 @@ export default function Home() {
 							className="w-16 h-16 border-4 border-[#3498DB] border-t-transparent rounded-full"
 						/>
 					</motion.div>
+				) : products.length === 0 ? (
+					<motion.div 
+						initial={{ opacity: 0, y: 30 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.8 }}
+						className="text-center py-20"
+					>
+						<div className="text-gray-500 text-lg mb-4">
+							Aucun produit disponible pour le moment.
+						</div>
+						<div className="text-sm text-gray-400">
+							Les produits seront ajoutés par l'administrateur.
+						</div>
+					</motion.div>
 				) : (
 					<motion.div 
 						initial={{ opacity: 0, y: 30 }}

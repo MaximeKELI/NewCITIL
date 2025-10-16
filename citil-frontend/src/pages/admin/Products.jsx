@@ -129,23 +129,31 @@ export default function ProductsAdmin() {
             </TR>
           </THead>
           <TBody>
-            {filtered.map(p => (
-              <TR key={p.id}>
-                <TD>{p.id}</TD>
-                <TD className="max-w-[220px] truncate flex items-center gap-2">
-                  {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
-                  <span className="truncate">{p.name}</span>
-                </TD>
-                <TD>{Number(p.price).toLocaleString()} CFA</TD>
-                <TD>{p.stock}</TD>
-                <TD>{p.category}</TD>
-                <TD>{p.stock > 0 ? 'En stock' : 'Rupture'}</TD>
-                <TD className="space-x-2 whitespace-nowrap">
-                  <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(p)}>Modifier</Button>
-                  <Button className="px-2 py-1 text-xs" onClick={() => onDelete(p.id)}>Supprimer</Button>
+            {filtered.length === 0 ? (
+              <TR>
+                <TD colSpan="7" className="text-center py-8 text-gray-500">
+                  Aucun produit trouvé. Commencez par ajouter votre premier produit.
                 </TD>
               </TR>
-            ))}
+            ) : (
+              filtered.map(p => (
+                <TR key={p.id}>
+                  <TD>{p.id}</TD>
+                  <TD className="max-w-[220px] truncate flex items-center gap-2">
+                    {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                    <span className="truncate">{p.name}</span>
+                  </TD>
+                  <TD>{Number(p.price).toLocaleString()} CFA</TD>
+                  <TD>{p.stock}</TD>
+                  <TD>{p.category}</TD>
+                  <TD>{p.stock > 0 ? 'En stock' : 'Rupture'}</TD>
+                  <TD className="space-x-2 whitespace-nowrap">
+                    <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(p)}>Modifier</Button>
+                    <Button className="px-2 py-1 text-xs" onClick={() => onDelete(p.id)}>Supprimer</Button>
+                  </TD>
+                </TR>
+              ))
+            )}
           </TBody>
         </Table>
       </Card>

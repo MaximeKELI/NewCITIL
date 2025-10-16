@@ -11,12 +11,15 @@ export default function Shop() {
 
 	useEffect(() => { ApiService.getProducts().then(setProducts).finally(() => setLoading(false)); }, []);
 
-	const categories = useMemo(() => ['Tous', 'Arduino', 'Capteurs', 'Kits', 'Solaire'], []);
+	const categories = useMemo(() => {
+		const uniqueCategories = ['Tous', ...new Set(products.map(p => p.category).filter(Boolean))];
+		return uniqueCategories;
+	}, [products]);
 
 	const filtered = useMemo(() => {
 		return products.filter(p => (
 			(!query || p.name.toLowerCase().includes(query.toLowerCase())) &&
-			(!category || category === 'Tous' || (category === 'Arduino' && p.name.toLowerCase().includes('arduino')) || (category === 'Capteurs' && p.name.toLowerCase().includes('capteur')) || (category === 'Solaire' && p.name.toLowerCase().includes('solaire')) || (category === 'Kits' && p.name.toLowerCase().includes('kit')))
+			(!category || category === 'Tous' || p.category === category)
 		));
 	}, [products, query, category]);
 
@@ -31,6 +34,17 @@ export default function Shop() {
 			</div>
 			{loading ? (
 				<div className="flex justify-center py-10"><LoadingSpinner /></div>
+			) : filtered.length === 0 ? (
+				<div className="text-center py-12">
+					<div className="text-gray-500 text-lg mb-4">
+						{products.length === 0 ? 'Aucun produit disponible pour le moment.' : 'Aucun produit ne correspond à votre recherche.'}
+					</div>
+					{products.length === 0 && (
+						<div className="text-sm text-gray-400">
+							Les produits seront ajoutés par l'administrateur.
+						</div>
+					)}
+				</div>
 			) : (
 				<div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 					{filtered.map(p => <ProductCard key={p.id} product={p} />)}

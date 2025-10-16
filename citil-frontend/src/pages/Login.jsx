@@ -9,13 +9,24 @@ export default function Login() {
 	const [password, setPassword] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
+	// const [success, setSuccess] = useState('');
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
+		// setSuccess('');
 		setLoading(true);
+		
+		// Validation côté client
+		if (!email || !password) {
+			setError('Veuillez remplir tous les champs');
+			setLoading(false);
+			return;
+		}
+		
 		try {
 			const result = await login(email, password);
+			// setSuccess('Connexion réussie !');
 			
 			// Rediriger selon le rôle de l'utilisateur connecté
 			if (result.user && result.user.role === 'admin') {

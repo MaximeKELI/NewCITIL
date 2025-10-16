@@ -40,4 +40,5 @@ export function TD({ children, className = '' }) {
   );
 }
 
-export default { Table, THead, TBody, TR, TH, TD };
+const TableComponents = { Table, THead, TBody, TR, TH, TD };
+export default TableComponents;

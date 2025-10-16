@@ -7,7 +7,7 @@ import { getAvatarUrl } from '../utils/avatarUtils.js';
 
 export default function Navbar() {
 	const { cartItems } = useCart();
-	const { user, logout, isAdmin } = useAuth();
+	const { user, logout } = useAuth();
 	const [open, setOpen] = useState(false);
 	const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 	const navigate = useNavigate();
@@ -35,9 +35,9 @@ export default function Navbar() {
 	return (
 		<header className="bg-white/90 backdrop-blur sticky top-0 z-50 border-b">
 			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-				<div className="flex h-36 items-center justify-between">
+				<div className="flex h-16 sm:h-20 md:h-24 lg:h-28 xl:h-36 items-center justify-between">
 					<Link to="/" className="flex items-center gap-3">
-						<img src="/assets/images/Logo CITIL.png" alt="CITIL" className="h-32 w-80 object-contain" />
+						<img src="/assets/images/Logo CITIL.png" alt="CITIL" className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[400px] object-contain" />
 					</Link>
 					<nav className="hidden md:flex items-center gap-2">
 						{navItem('/', 'Accueil')}

@@ -1,6 +1,6 @@
 // import axios from 'axios';
 
-// const API_URL = 'http://localhost:8000'; // adapte si ton backend tourne sur un autre port
+// const API_URL = 'http://localhost:8001'; // adapte si ton backend tourne sur un autre port
 // const api = axios.create({
 //   baseURL: 'http://localhost:8000', // adapte si ton backend tourne sur un autre port
 //   //timeout: 15000,
@@ -239,7 +239,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'http://localhost:8001';
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
@@ -276,65 +276,8 @@ api.interceptors.response.use(
 );
 
 // ----------------------------------------------------------------------
-// 1. FONCTIONS ET DONNÉES DE MOCK
+// 1. FONCTIONS UTILITAIRES
 // ----------------------------------------------------------------------
-
-// Simule un délai réseau pour une meilleure expérience de chargement
-const mockDelay = (ms = 500) => new Promise(res => setTimeout(res, ms));
-
-// Structure des données moquées pour toutes les interfaces
-
-// PRODUITS
-let mockProducts = [
-    { id: 1, name: 'Arduino Uno R3', price: 12000, image: '/assets/images/arduino_uno.jpg', stock: 15, description: 'Carte de prototypage idéale pour apprendre l’électronique et la programmation.', category: 'Arduino' },
-    { id: 2, name: 'Capteur DS18B20', price: 3500, image: '/assets/images/capteur_ds18b20.jpg', stock: 42, description: 'Capteur de température numérique précis pour projets IoT.', category: 'Capteurs' },
-    { id: 3, name: 'Kit Robot Éducatif', price: 65000, image: '/assets/images/kit_robot_educatif.jpg', stock: 8, description: 'Kit complet pour découvrir la robotique avec des ateliers pratiques.', category: 'Kits' },
-    { id: 4, name: 'Panneau Solaire 100W', price: 120000, image: '/assets/images/panneau_solaire.jpg', stock: 20, description: 'Panneau solaire monocristallin 100W pour installations domestiques.', category: 'Plaques solaires' },
-    { id: 5, name: 'Batterie 12V 20Ah', price: 90000, image: '/assets/images/batterie_12v.jpg', stock: 12, description: 'Batterie AGM 12V 20Ah pour systèmes solaires.', category: 'Plaques solaires' },
-    { id: 6, name: 'Raspberry Pi 4 (4GB)', price: 150000, image: '/assets/images/rasbarry_pi.jpg', stock: 6, description: 'Mini-ordinateur polyvalent pour projets IoT et IA.', category: 'Cartes & MCU' },
-];
-
-// FORMATIONS
-let mockTrainings = [
-    { id: 1, title: 'Formation Arduino – Débutant', date: '2025-10-05', duration: '2 jours', price: 25000, image: '/assets/images/training-arduino.jpg' },
-    { id: 2, title: 'Introduction à l’IoT', date: '2025-10-12', duration: '3 jours', price: 40000, image: '/assets/images/training-iot.jpg' },
-    { id: 3, title: 'Robotique Avancée', date: '2025-11-01', duration: '5 jours', price: 75000, image: '/assets/images/training-robotics.jpg' },
-];
-
-// UTILISATEURS
-let mockUsers = [
-    { id: 1, name: 'Admin', email: 'admin@citil.tg', phone: '+228 90 00 00 00', role: 'admin', createdAt: '2025-01-10' },
-    { id: 2, name: 'Kossi Doe', email: 'kossi@gmail.com', phone: '+228 91 11 22 33', role: 'client', createdAt: '2025-02-05' },
-    { id: 3, name: 'Awa K.', email: 'awa@gmail.com', phone: '+228 92 22 33 44', role: 'client', createdAt: '2025-03-15' },
-];
-
-// CANDIDATURES
-let mockApplications = [
-    { id: 1, name: 'Kodjo A.', email: 'kodjo@exemple.com', cvUrl: '/assets/cv/kodjo.pdf', message: 'Passionné par l’IoT.', status: 'En attente' },
-    { id: 2, name: 'Aicha B.', email: 'aicha@exemple.com', cvUrl: '/assets/cv/aicha.pdf', message: 'Développeuse web', status: 'Validé' },
-];
-
-// CATÉGORIES PRODUITS
-let mockCategories = [
-    { id: 1, name: 'Arduino', slug: 'arduino', description: 'Cartes Arduino et accessoires' },
-    { id: 2, name: 'Capteurs', slug: 'capteurs', description: 'Capteurs pour projets IoT' },
-    { id: 3, name: 'Kits', slug: 'kits', description: 'Kits éducatifs et de démarrage' },
-    { id: 4, name: 'Plaques solaires', slug: 'plaques-solaires', description: 'Solutions solaires' },
-];
-
-// ARTICLES DE BLOG
-let mockPosts = [
-    { id: 1, title: 'Démarrer en électronique', excerpt: 'Les bases pour débuter en électronique…', image: '/assets/images/post-1.jpg', content: 'Contenu détaillé de l\'article 1...' },
-    { id: 2, title: 'IoT au Togo: opportunités', excerpt: 'Pourquoi l’IoT est une chance…', image: '/assets/images/post-2.jpg', content: 'Contenu détaillé de l\'article 2...' },
-    { id: 3, title: 'Tutoriel : Programmer votre ESP32', excerpt: 'Guide pas-à-pas pour les débutants.', image: '/assets/images/post-3.jpg', content: 'Contenu détaillé de l\'article 3...' },
-];
-
-// CATÉGORIES BLOG
-let mockBlogCategories = [
-    { id: 1, name: 'Actualités', slug: 'actualites' },
-    { id: 2, name: 'Tutoriels', slug: 'tutoriels' },
-    { id: 3, name: 'Études de cas', slug: 'etudes-de-cas' },
-];
 
 // ----------------------------------------------------------------------
 // 2. SERVICE API MOQUÉ

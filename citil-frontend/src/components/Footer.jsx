@@ -11,15 +11,15 @@ export default function Footer() {
 				<div>
 					<h4 className="text-lg font-semibold mb-2">Contact</h4>
 					<p className="text-sm opacity-90">Lomé, Togo</p>
-					<p className="text-sm opacity-90">+228 90 01 38 02/91 12 05 00</p>
-					<p className="text-sm opacity-90">mpad.leadertech@gmail.com</p>
+					<a href="tel:+22890013802" className="text-sm opacity-90 hover:text-[#3498DB] transition-colors">+228 90 01 38 02/91 12 05 00</a>
+					<a href="mailto:mpad.leadertech@gmail.com" className="text-sm opacity-90 hover:text-[#3498DB] transition-colors">mpad.leadertech@gmail.com</a>
 				</div>
 				<div>
 					<h4 className="text-lg font-semibold mb-2">Suivez-nous</h4>
 					<div className="flex gap-3 opacity-90 text-sm">
-						<a href="#">Facebook</a>
-						<a href="#">Tiktok</a>
-						<a href="#">LinkedIn</a>
+						<a href="https://facebook.com/citil.tg" target="_blank" rel="noopener noreferrer" className="hover:text-[#3498DB] transition-colors">Facebook</a>
+						<a href="https://tiktok.com/@citil.tg" target="_blank" rel="noopener noreferrer" className="hover:text-[#3498DB] transition-colors">Tiktok</a>
+						<a href="https://linkedin.com/company/citil-tg" target="_blank" rel="noopener noreferrer" className="hover:text-[#3498DB] transition-colors">LinkedIn</a>
 					</div>
 				</div>
 			</div>

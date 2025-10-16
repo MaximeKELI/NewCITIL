@@ -494,53 +494,6 @@ export default function Profile() {
 					</form>
 				</motion.div>
 
-				{/* Stats Cards */}
-				<motion.div
-					initial={{ opacity: 0, y: 40 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.8, duration: 0.6 }}
-					className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8"
-				>
-					<motion.div
-						whileHover={{ y: -5 }}
-						className="bg-white rounded-xl shadow-lg p-6 text-center"
-					>
-						<div className="w-12 h-12 bg-gradient-to-br from-[#3498DB] to-[#2980B9] rounded-full flex items-center justify-center mx-auto mb-4">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-								<path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.318.114.362.278l2.558 9.64a.75.75 0 0 0 .706.522H17.25a.75.75 0 0 0 0-1.5H7.5l-.5-1.5h10.5a.75.75 0 0 0 .706-.522l2.558-9.64a.75.75 0 0 0-.362-.278H2.25Z" />
-								<path d="M3.75 20.25a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0ZM12.75 20.25a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z" />
-							</svg>
-						</div>
-						<h3 className="text-2xl font-bold text-[#2C3E50]">0</h3>
-						<p className="text-gray-600">Commandes</p>
-					</motion.div>
-
-					<motion.div
-						whileHover={{ y: -5 }}
-						className="bg-white rounded-xl shadow-lg p-6 text-center"
-					>
-						<div className="w-12 h-12 bg-gradient-to-br from-[#2ECC71] to-[#27AE60] rounded-full flex items-center justify-center mx-auto mb-4">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-								<path fillRule="evenodd" d="M12 2.25a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM3.75 20.1a8.25 8.25 0 1 1 16.5 0 .9.9 0 0 1-.9.9H4.65a.9.9 0 0 1-.9-.9Z" clipRule="evenodd" />
-							</svg>
-						</div>
-						<h3 className="text-2xl font-bold text-[#2C3E50]">0</h3>
-						<p className="text-gray-600">Formations suivies</p>
-					</motion.div>
-
-					<motion.div
-						whileHover={{ y: -5 }}
-						className="bg-white rounded-xl shadow-lg p-6 text-center"
-					>
-						<div className="w-12 h-12 bg-gradient-to-br from-[#F1C40F] to-[#E67E22] rounded-full flex items-center justify-center mx-auto mb-4">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-								<path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clipRule="evenodd" />
-							</svg>
-						</div>
-						<h3 className="text-2xl font-bold text-[#2C3E50]">0</h3>
-						<p className="text-gray-600">Points de fidélité</p>
-					</motion.div>
-				</motion.div>
 			</div>
 		</div>
 	);
