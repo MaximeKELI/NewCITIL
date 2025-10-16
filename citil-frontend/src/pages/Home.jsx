@@ -442,6 +442,165 @@ export default function Home() {
 					})()}
 				</div>
 			</motion.section>
+
+			{/* Section Formations */}
+			<motion.section 
+				initial={{ opacity: 0 }}
+				whileInView={{ opacity: 1 }}
+				transition={{ duration: 0.8 }}
+				viewport={{ once: true }}
+				className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20"
+			>
+				<motion.div 
+					initial={{ opacity: 0, y: 20 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.6 }}
+					viewport={{ once: true }}
+					className="text-center mb-16"
+				>
+					<h2 className="text-4xl font-bold bg-gradient-to-r from-[#2C3E50] to-[#3498DB] bg-clip-text text-transparent mb-4">
+						Formations professionnelles
+					</h2>
+					<p className="text-lg text-gray-600 max-w-2xl mx-auto">
+						Développez vos compétences avec nos formations expertes en technologie et innovation
+					</p>
+				</motion.div>
+
+				<div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+					{[
+						{
+							title: "Formation Arduino",
+							description: "Apprenez la programmation et l'électronique avec Arduino",
+							price: "25 000 CFA",
+							duration: "2 jours",
+							icon: "🔧"
+						},
+						{
+							title: "Introduction à l'IoT",
+							description: "Découvrez l'Internet des Objets et ses applications",
+							price: "40 000 CFA",
+							duration: "3 jours",
+							icon: "📡"
+						},
+						{
+							title: "Installation Solaire",
+							description: "Maîtrisez l'installation et la maintenance de systèmes solaires",
+							price: "60 000 CFA",
+							duration: "5 jours",
+							icon: "☀️"
+						}
+					].map((formation, index) => (
+						<motion.div
+							key={formation.title}
+							initial={{ opacity: 0, y: 30 }}
+							whileInView={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.6, delay: index * 0.1 }}
+							viewport={{ once: true }}
+							whileHover={{ y: -8, scale: 1.02 }}
+							className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300"
+						>
+							<div className="text-center">
+								<div className="w-16 h-16 bg-gradient-to-br from-[#3498DB] to-[#2980B9] rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+									{formation.icon}
+								</div>
+								<h3 className="text-xl font-bold text-[#2C3E50] mb-3">{formation.title}</h3>
+								<p className="text-gray-600 mb-4">{formation.description}</p>
+								<div className="flex justify-between items-center text-sm text-gray-500 mb-4">
+									<span>Durée: {formation.duration}</span>
+									<span className="font-bold text-[#3498DB]">{formation.price}</span>
+								</div>
+								<Link
+									to="/formations"
+									className="w-full inline-block px-6 py-3 bg-gradient-to-r from-[#3498DB] to-[#2980B9] text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
+								>
+									S'inscrire
+								</Link>
+							</div>
+						</motion.div>
+					))}
+				</div>
+
+				<motion.div 
+					initial={{ opacity: 0, y: 20 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.6, delay: 0.4 }}
+					viewport={{ once: true }}
+					className="text-center mt-12"
+				>
+					<Link
+						to="/formations"
+						className="inline-flex items-center gap-2 px-8 py-4 border-2 border-[#3498DB] text-[#3498DB] font-semibold rounded-xl hover:bg-[#3498DB] hover:text-white transition-all duration-300"
+					>
+						Voir toutes les formations
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+							<path fillRule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clipRule="evenodd" />
+						</svg>
+					</Link>
+				</motion.div>
+			</motion.section>
+
+			{/* Section Contact/CTA */}
+			<motion.section 
+				initial={{ opacity: 0 }}
+				whileInView={{ opacity: 1 }}
+				transition={{ duration: 0.8 }}
+				viewport={{ once: true }}
+				className="relative bg-gradient-to-br from-[#2C3E50] via-[#3498DB] to-[#2ECC71] py-20 overflow-hidden"
+			>
+				{/* Background decoration */}
+				<div className="absolute inset-0 bg-gradient-to-r from-[#3498DB]/20 to-[#2ECC71]/20"></div>
+				<div className="absolute top-0 left-0 w-full h-full">
+					<div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+					<div className="absolute bottom-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+				</div>
+				
+				<div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+					<motion.div 
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.8 }}
+						viewport={{ once: true }}
+					>
+						<h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+							Prêt à transformer vos idées ?
+						</h2>
+						<p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
+							Contactez-nous dès aujourd'hui pour discuter de votre projet et découvrir comment CITIL peut vous accompagner vers le succès.
+						</p>
+						<div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+							<motion.div
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+							>
+								<Link
+									to="/contact"
+									className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2C3E50] font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+										<path fillRule="evenodd" d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z" clipRule="evenodd" />
+									</svg>
+									Nous contacter
+								</Link>
+							</motion.div>
+							<motion.div
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+							>
+								<Link
+									to="/boutique"
+									className="inline-flex items-center gap-2 px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-white hover:text-[#2C3E50] transition-all duration-300"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+										<path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.318.114.362.278l2.558 9.64a.75.75 0 0 0 .706.522H17.25a.75.75 0 0 0 0-1.5H7.5l-.5-1.5h10.5a.75.75 0 0 0 .706-.522l2.558-9.64a.75.75 0 0 0-.362-.278H2.25Z" />
+										<path d="M3.75 20.25a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0ZM12.75 20.25a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z" />
+									</svg>
+									Voir la boutique
+								</Link>
+							</motion.div>
+						</div>
+					</motion.div>
+				</div>
+			</motion.section>
 		</div>
 	);
 }

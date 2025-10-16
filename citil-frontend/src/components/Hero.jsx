@@ -9,7 +9,7 @@ export default function Hero() {
 			whileInView={{ opacity: 1 }}
 			viewport={{ once: true }}
 			transition={{ duration: 0.8 }}
-			className="relative h-[85vh] sm:h-[95vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#F9F9EA] via-white to-[#F9F9EA]"
+			className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#F9F9EA] via-white to-[#F9F9EA] py-20"
 		>
 			{/* Animated background elements */}
 			<div className="absolute inset-0 overflow-hidden">
@@ -179,7 +179,7 @@ export default function Hero() {
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ delay: 1.2, duration: 0.8 }}
-					className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto"
+					className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto px-4"
 				>
 					{[
 						{ number: "500+", label: "Projets réalisés", icon: "🚀" },
@@ -193,11 +193,11 @@ export default function Hero() {
 							viewport={{ once: true }}
 							transition={{ delay: 1.4 + index * 0.2, duration: 0.6 }}
 							whileHover={{ scale: 1.05, y: -5 }}
-							className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200 text-center"
+							className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200 text-center min-h-[140px] flex flex-col justify-center"
 						>
-							<div className="text-3xl mb-2">{stat.icon}</div>
-							<div className="text-3xl font-bold text-[#2C3E50] mb-1">{stat.number}</div>
-							<div className="text-gray-600 font-medium">{stat.label}</div>
+							<div className="text-4xl mb-3">{stat.icon}</div>
+							<div className="text-4xl font-bold text-[#2C3E50] mb-2">{stat.number}</div>
+							<div className="text-gray-600 font-medium text-sm sm:text-base">{stat.label}</div>
 						</motion.div>
 					))}
 				</motion.div>
