@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\BlogCategoryController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\InternshipApplicationController;
+use App\Http\Controllers\Api\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Liste des candidatures (admin seulement)
     Route::get('/admin/internship-applications', [InternshipApplicationController::class, 'index']);
+    
+    // Gestion des utilisateurs (admin seulement)
+    Route::get('/admin/users', [UserController::class, 'index']);
 });
 
 /*

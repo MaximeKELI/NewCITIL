@@ -587,7 +587,7 @@ export const ApiService = {
         return data;
     },
     getBlogCategories: async () => {
-        const response = await api.get('/api/blog-categories');
+        const response = await api.get('/api/categories');
         return response.data;
     },
     createOrder: async (order) => {
