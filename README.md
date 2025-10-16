@@ -18,6 +18,9 @@
 - [📊 Base de données](#-base-de-données)
 - [🔐 Authentification](#-authentification)
 - [🎨 Interface utilisateur](#-interface-utilisateur)
+- [🎭 Animations et interactions](#-animations-et-interactions)
+- [🎨 Design System et Styles](#-design-system-et-styles)
+- [📊 Schémas et diagrammes](#-schémas-et-diagrammes)
 - [📱 Responsive Design](#-responsive-design)
 - [🧪 Tests](#-tests)
 - [📈 Performance](#-performance)
@@ -620,40 +623,875 @@ Dark: #2C3E50 (Bleu foncé)
 <FormInput.FieldError error={emailError} />
 ```
 
-### **Animations Framer Motion**
+## 🎭 Animations et interactions
 
-#### **Animations de page**
+### **Système d'animations Framer Motion**
+
+#### **Types d'animations disponibles**
+
+##### **1. Animations d'entrée (Page Load)**
 ```jsx
+// Animation fade-in avec mouvement vertical
 <motion.div
-  initial={{ opacity: 0, y: 20 }}
+  initial={{ opacity: 0, y: 30 }}
   animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6 }}
+  transition={{ duration: 0.6, ease: "easeOut" }}
 >
   Contenu animé
 </motion.div>
-```
 
-#### **Animations au scroll**
-```jsx
+// Animation avec délai progressif
 <motion.div
-  initial={{ opacity: 0 }}
-  whileInView={{ opacity: 1 }}
-  viewport={{ once: true }}
-  transition={{ duration: 0.8 }}
+  initial={{ opacity: 0, x: -50 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ duration: 0.8, delay: 0.2 }}
 >
-  Contenu qui apparaît au scroll
+  Élément avec délai
 </motion.div>
 ```
 
-#### **Animations d'interaction**
+##### **2. Animations au scroll (Scroll-triggered)**
 ```jsx
+// Animation qui se déclenche au scroll
+<motion.div
+  initial={{ opacity: 0, y: 50 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, margin: "-100px" }}
+  transition={{ duration: 0.8, ease: "easeOut" }}
+>
+  Contenu qui apparaît au scroll
+</motion.div>
+
+// Animation en cascade
+<motion.div
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.6, delay: 0.1 * index }}
+>
+  Élément avec délai basé sur l'index
+</motion.div>
+```
+
+##### **3. Animations d'interaction (Hover/Tap)**
+```jsx
+// Bouton avec effet hover
 <motion.button
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
+  whileHover={{ 
+    scale: 1.05, 
+    y: -2,
+    transition: { duration: 0.2 }
+  }}
+  whileTap={{ 
+    scale: 0.95,
+    transition: { duration: 0.1 }
+  }}
+  className="px-6 py-3 bg-blue-500 text-white rounded-lg"
 >
   Bouton interactif
 </motion.button>
+
+// Carte avec effet de survol
+<motion.div
+  whileHover={{ 
+    y: -8, 
+    scale: 1.02,
+    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
+  }}
+  transition={{ duration: 0.3, ease: "easeOut" }}
+  className="bg-white rounded-xl p-6 shadow-lg"
+>
+  Carte interactive
+</motion.div>
 ```
+
+##### **4. Animations continues (Loop)**
+```jsx
+// Rotation continue
+<motion.div
+  animate={{ rotate: 360 }}
+  transition={{ 
+    duration: 2, 
+    repeat: Infinity, 
+    ease: "linear" 
+  }}
+  className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
+/>
+
+// Pulsation
+<motion.div
+  animate={{ 
+    scale: [1, 1.1, 1],
+    opacity: [0.7, 1, 0.7]
+  }}
+  transition={{ 
+    duration: 2, 
+    repeat: Infinity,
+    ease: "easeInOut"
+  }}
+  className="w-4 h-4 bg-green-500 rounded-full"
+/>
+```
+
+##### **5. Animations de transition de page**
+```jsx
+// Transition entre pages
+<AnimatePresence mode="wait">
+  <motion.div
+    key={location.pathname}
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: -20 }}
+    transition={{ duration: 0.3 }}
+  >
+    <Routes>
+      {/* Routes */}
+    </Routes>
+  </motion.div>
+</AnimatePresence>
+```
+
+### **Animations spécifiques par composant**
+
+#### **Hero Section**
+```jsx
+// Titre principal avec animation d'apparition
+<motion.h1
+  initial={{ opacity: 0, y: 50 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 1, delay: 0.5 }}
+  className="text-6xl font-bold"
+>
+  Votre Survie Dépend De La Technologie
+</motion.h1>
+
+// Éléments flottants en arrière-plan
+<motion.div
+  animate={{
+    x: [0, 100, 0],
+    y: [0, -50, 0],
+    scale: [1, 1.2, 1],
+  }}
+  transition={{
+    duration: 8,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }}
+  className="absolute w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"
+/>
+```
+
+#### **Cartes de statistiques**
+```jsx
+// Animation d'apparition en cascade
+<motion.div
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ 
+    duration: 0.6, 
+    delay: 1.4 + index * 0.2 
+  }}
+  whileHover={{ scale: 1.05, y: -5 }}
+  className="bg-white/90 rounded-2xl p-8 shadow-xl"
+>
+  <div className="text-4xl mb-3">🚀</div>
+  <div className="text-4xl font-bold text-[#2C3E50] mb-2">500+</div>
+  <div className="text-gray-600 font-medium">Projets réalisés</div>
+</motion.div>
+```
+
+#### **Carrousel de témoignages**
+```jsx
+// Animation de défilement continu
+<motion.div
+  className="flex gap-8"
+  initial={{ x: 0 }}
+  animate={{ x: ['0%', '-50%'] }}
+  transition={{ 
+    duration: 30, 
+    ease: 'linear', 
+    repeat: Infinity 
+  }}
+  style={{ width: '200%' }}
+>
+  {testimonials.map((testimonial, index) => (
+    <motion.div
+      key={index}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="w-[28%] shrink-0"
+    >
+      {/* Contenu du témoignage */}
+    </motion.div>
+  ))}
+</motion.div>
+```
+
+### **Performance des animations**
+
+#### **Optimisations**
+```jsx
+// Utilisation de will-change pour les performances
+<motion.div
+  style={{ willChange: 'transform, opacity' }}
+  animate={{ scale: 1.1 }}
+>
+  Élément optimisé
+</motion.div>
+
+// Animation avec GPU acceleration
+<motion.div
+  animate={{ 
+    x: 100,
+    scale: 1.1 
+  }}
+  transition={{ 
+    type: "spring",
+    stiffness: 100,
+    damping: 10
+  }}
+>
+  Animation fluide
+</motion.div>
+```
+
+#### **Réduction des animations sur mobile**
+```jsx
+// Détection de la préférence utilisateur
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+<motion.div
+  animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
+  transition={prefersReducedMotion ? {} : { duration: 0.6 }}
+>
+  Contenu adaptatif
+</motion.div>
+```
+
+## 🎨 Design System et Styles
+
+### **Système de couleurs étendu**
+
+#### **Palette principale**
+```css
+/* Couleurs primaires */
+--primary-50: #EBF8FF;
+--primary-100: #BEE3F8;
+--primary-200: #90CDF4;
+--primary-300: #63B3ED;
+--primary-400: #4299E1;
+--primary-500: #3498DB;  /* Couleur principale */
+--primary-600: #2980B9;
+--primary-700: #1E6BA8;
+--primary-800: #1A5A96;
+--primary-900: #1A4A85;
+
+/* Couleurs secondaires */
+--secondary-50: #F8FAFC;
+--secondary-100: #F1F5F9;
+--secondary-200: #E2E8F0;
+--secondary-300: #CBD5E1;
+--secondary-400: #94A3B8;
+--secondary-500: #64748B;
+--secondary-600: #475569;
+--secondary-700: #334155;
+--secondary-800: #2C3E50;  /* Couleur secondaire */
+--secondary-900: #0F172A;
+
+/* Couleurs d'accent */
+--accent-50: #F0FDF4;
+--accent-100: #DCFCE7;
+--accent-200: #BBF7D0;
+--accent-300: #86EFAC;
+--accent-400: #4ADE80;
+--accent-500: #2ECC71;  /* Couleur d'accent */
+--accent-600: #16A085;
+--accent-700: #15803D;
+--accent-800: #166534;
+--accent-900: #14532D;
+```
+
+#### **Couleurs sémantiques**
+```css
+/* États et feedback */
+--success: #27AE60;
+--warning: #F1C40F;
+--error: #E74C3C;
+--info: #3498DB;
+
+/* Couleurs neutres */
+--gray-50: #F9FAFB;
+--gray-100: #F3F4F6;
+--gray-200: #E5E7EB;
+--gray-300: #D1D5DB;
+--gray-400: #9CA3AF;
+--gray-500: #6B7280;
+--gray-600: #4B5563;
+--gray-700: #374151;
+--gray-800: #1F2937;
+--gray-900: #111827;
+```
+
+### **Système de typographie**
+
+#### **Échelle typographique**
+```css
+/* Tailles de police */
+--text-xs: 0.75rem;     /* 12px */
+--text-sm: 0.875rem;    /* 14px */
+--text-base: 1rem;      /* 16px */
+--text-lg: 1.125rem;    /* 18px */
+--text-xl: 1.25rem;     /* 20px */
+--text-2xl: 1.5rem;     /* 24px */
+--text-3xl: 1.875rem;   /* 30px */
+--text-4xl: 2.25rem;    /* 36px */
+--text-5xl: 3rem;       /* 48px */
+--text-6xl: 3.75rem;    /* 60px */
+--text-7xl: 4.5rem;     /* 72px */
+
+/* Poids de police */
+--font-thin: 100;
+--font-extralight: 200;
+--font-light: 300;
+--font-normal: 400;
+--font-medium: 500;
+--font-semibold: 600;
+--font-bold: 700;
+--font-extrabold: 800;
+--font-black: 900;
+
+/* Hauteurs de ligne */
+--leading-none: 1;
+--leading-tight: 1.25;
+--leading-snug: 1.375;
+--leading-normal: 1.5;
+--leading-relaxed: 1.625;
+--leading-loose: 2;
+```
+
+#### **Styles de texte prédéfinis**
+```css
+/* Titres */
+.heading-1 {
+  font-size: var(--text-6xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  color: var(--secondary-800);
+}
+
+.heading-2 {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  color: var(--secondary-700);
+}
+
+.heading-3 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-snug);
+  color: var(--secondary-700);
+}
+
+/* Corps de texte */
+.body-large {
+  font-size: var(--text-lg);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-relaxed);
+  color: var(--gray-700);
+}
+
+.body-medium {
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  color: var(--gray-600);
+}
+
+.body-small {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  color: var(--gray-500);
+}
+```
+
+### **Système d'espacement**
+
+#### **Échelle d'espacement**
+```css
+/* Espacement uniforme */
+--space-0: 0;
+--space-1: 0.25rem;   /* 4px */
+--space-2: 0.5rem;    /* 8px */
+--space-3: 0.75rem;   /* 12px */
+--space-4: 1rem;      /* 16px */
+--space-5: 1.25rem;   /* 20px */
+--space-6: 1.5rem;    /* 24px */
+--space-8: 2rem;      /* 32px */
+--space-10: 2.5rem;   /* 40px */
+--space-12: 3rem;     /* 48px */
+--space-16: 4rem;     /* 64px */
+--space-20: 5rem;     /* 80px */
+--space-24: 6rem;     /* 96px */
+--space-32: 8rem;     /* 128px */
+--space-40: 10rem;    /* 160px */
+--space-48: 12rem;    /* 192px */
+--space-56: 14rem;    /* 224px */
+--space-64: 16rem;    /* 256px */
+```
+
+### **Système de composants**
+
+#### **Boutons**
+```jsx
+// Variantes de boutons
+const buttonVariants = {
+  primary: "bg-[#3498DB] text-white hover:bg-[#2980B9] focus:ring-2 focus:ring-[#3498DB] focus:ring-offset-2",
+  secondary: "bg-white text-[#3498DB] border-2 border-[#3498DB] hover:bg-[#3498DB] hover:text-white",
+  success: "bg-[#2ECC71] text-white hover:bg-[#27AE60] focus:ring-2 focus:ring-[#2ECC71]",
+  danger: "bg-[#E74C3C] text-white hover:bg-[#C0392B] focus:ring-2 focus:ring-[#E74C3C]",
+  ghost: "bg-transparent text-[#3498DB] hover:bg-[#3498DB] hover:text-white"
+};
+
+// Tailles de boutons
+const buttonSizes = {
+  sm: "px-3 py-1.5 text-sm",
+  md: "px-4 py-2 text-base",
+  lg: "px-6 py-3 text-lg",
+  xl: "px-8 py-4 text-xl"
+};
+```
+
+#### **Cartes**
+```jsx
+// Système de cartes
+const cardVariants = {
+  default: "bg-white rounded-xl shadow-lg border border-gray-200",
+  elevated: "bg-white rounded-xl shadow-2xl border border-gray-100",
+  outlined: "bg-transparent rounded-xl border-2 border-gray-300",
+  filled: "bg-gray-50 rounded-xl border border-gray-200"
+};
+
+// Tailles de cartes
+const cardSizes = {
+  sm: "p-4",
+  md: "p-6",
+  lg: "p-8",
+  xl: "p-10"
+};
+```
+
+#### **Formulaires**
+```jsx
+// Styles de champs de formulaire
+const inputStyles = {
+  base: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3498DB] focus:border-transparent transition-colors",
+  error: "border-red-500 focus:ring-red-500",
+  success: "border-green-500 focus:ring-green-500",
+  disabled: "bg-gray-100 cursor-not-allowed opacity-50"
+};
+```
+
+### **Thèmes et modes**
+
+#### **Mode sombre (Dark Mode)**
+```css
+/* Variables CSS pour le mode sombre */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0F172A;
+    --bg-secondary: #1E293B;
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --border-color: #334155;
+  }
+}
+
+/* Classes Tailwind pour le mode sombre */
+.dark {
+  --tw-bg-opacity: 1;
+  background-color: rgb(15 23 42 / var(--tw-bg-opacity));
+  color: rgb(248 250 252 / var(--tw-text-opacity));
+}
+```
+
+#### **Thème personnalisé**
+```javascript
+// Configuration Tailwind pour thème personnalisé
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#EBF8FF',
+          500: '#3498DB',
+          900: '#1A4A85',
+        },
+        secondary: {
+          50: '#F8FAFC',
+          500: '#2C3E50',
+          900: '#0F172A',
+        }
+      },
+      fontFamily: {
+        'sans': ['Inter', 'system-ui', 'sans-serif'],
+        'display': ['Poppins', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.6s ease-out',
+        'slide-up': 'slideUp 0.8s ease-out',
+        'bounce-gentle': 'bounceGentle 2s infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(30px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        bounceGentle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
+      }
+    }
+  }
+}
+```
+
+## 📊 Schémas et diagrammes
+
+### **Architecture générale du système**
+
+```mermaid
+graph TB
+    subgraph "Frontend (React)"
+        A[Pages] --> B[Components]
+        B --> C[Services]
+        C --> D[Context]
+        D --> E[Utils]
+    end
+    
+    subgraph "Backend (Laravel)"
+        F[Controllers] --> G[Models]
+        G --> H[Database]
+        F --> I[Middleware]
+        I --> J[Routes]
+    end
+    
+    subgraph "Base de données"
+        K[(SQLite/MySQL)]
+        L[Users]
+        M[Products]
+        N[Orders]
+        O[Trainings]
+    end
+    
+    A --> F
+    C --> F
+    G --> K
+    K --> L
+    K --> M
+    K --> N
+    K --> O
+```
+
+### **Schéma de base de données**
+
+```mermaid
+erDiagram
+    USERS {
+        int id PK
+        string name
+        string email UK
+        timestamp email_verified_at
+        string password
+        string phone
+        string role
+        string avatar
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    CATEGORIES {
+        int id PK
+        string name
+        string slug UK
+        text description
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    PRODUCTS {
+        int id PK
+        string name
+        text description
+        decimal price
+        string image
+        int stock
+        int category_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    TRAININGS {
+        int id PK
+        string title
+        text description
+        decimal price
+        int duration_hours
+        date start_date
+        string image
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ORDERS {
+        int id PK
+        int user_id FK
+        decimal total_amount
+        string status
+        text shipping_address
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ORDER_ITEMS {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        decimal price
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    BLOG_CATEGORIES {
+        int id PK
+        string name
+        string slug UK
+        text description
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    BLOG_POSTS {
+        int id PK
+        string title
+        text content
+        text excerpt
+        string image
+        int category_id FK
+        boolean published
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    USERS ||--o{ ORDERS : "places"
+    CATEGORIES ||--o{ PRODUCTS : "contains"
+    CATEGORIES ||--o{ BLOG_POSTS : "categorizes"
+    ORDERS ||--o{ ORDER_ITEMS : "contains"
+    PRODUCTS ||--o{ ORDER_ITEMS : "included_in"
+    BLOG_CATEGORIES ||--o{ BLOG_POSTS : "categorizes"
+```
+
+### **Flux d'authentification**
+
+```mermaid
+sequenceDiagram
+    participant U as Utilisateur
+    participant F as Frontend
+    participant B as Backend
+    participant D as Database
+    
+    U->>F: Saisit email/password
+    F->>B: POST /api/login
+    B->>D: Vérifie credentials
+    D-->>B: Retourne user data
+    B->>B: Génère token Sanctum
+    B-->>F: Retourne token + user
+    F->>F: Stocke token localStorage
+    F->>U: Redirige vers dashboard
+    
+    Note over F,B: Requêtes authentifiées
+    F->>B: GET /api/admin/users
+    Note over F: Headers: Authorization: Bearer token
+    B->>B: Vérifie token
+    B->>D: Requête données
+    D-->>B: Retourne données
+    B-->>F: Retourne réponse
+```
+
+### **Flux de commande**
+
+```mermaid
+flowchart TD
+    A[Utilisateur visite boutique] --> B[Parcourt les produits]
+    B --> C[Clique sur produit]
+    C --> D[Ajoute au panier]
+    D --> E[Vérifie stock]
+    E --> F{Stock disponible?}
+    F -->|Oui| G[Confirme commande]
+    F -->|Non| H[Affiche erreur]
+    G --> I[Saisit adresse livraison]
+    I --> J[Confirme paiement]
+    J --> K[Crée commande en DB]
+    K --> L[Envoie email confirmation]
+    L --> M[Met à jour stock]
+    M --> N[Commande traitée]
+```
+
+### **Architecture des composants React**
+
+```mermaid
+graph TD
+    A[App.jsx] --> B[AuthContext]
+    A --> C[Router]
+    C --> D[Pages]
+    
+    D --> E[Home]
+    D --> F[Shop]
+    D --> G[Trainings]
+    D --> H[Blog]
+    D --> I[Profile]
+    D --> J[Admin]
+    
+    E --> K[Hero]
+    E --> L[Services]
+    E --> M[Testimonials]
+    
+    F --> N[ProductCard]
+    F --> O[ProductFilter]
+    
+    J --> P[Dashboard]
+    J --> Q[ProductsAdmin]
+    J --> R[UsersAdmin]
+    J --> S[OrdersAdmin]
+    
+    T[Components] --> U[Button]
+    T --> V[Card]
+    T --> W[FormInput]
+    T --> X[Table]
+    T --> Y[Modal]
+    
+    Z[Services] --> AA[ApiService]
+    AA --> BB[AuthService]
+    AA --> CC[ProductService]
+    AA --> DD[OrderService]
+```
+
+### **Structure des fichiers**
+
+```
+PLATEFORME-CITIL/
+├── 📁 citil-backend/                 # Backend Laravel
+│   ├── 📁 app/
+│   │   ├── 📁 Http/Controllers/Api/  # Contrôleurs API
+│   │   │   ├── 📄 AuthController.php
+│   │   │   ├── 📄 ProductController.php
+│   │   │   ├── 📄 TrainingController.php
+│   │   │   ├── 📄 UserController.php
+│   │   │   └── 📄 BlogPostController.php
+│   │   ├── 📁 Models/                # Modèles Eloquent
+│   │   │   ├── 📄 User.php
+│   │   │   ├── 📄 Product.php
+│   │   │   ├── 📄 Training.php
+│   │   │   ├── 📄 Order.php
+│   │   │   └── 📄 BlogPost.php
+│   │   └── 📁 Providers/
+│   ├── 📁 database/
+│   │   ├── 📁 migrations/            # Migrations DB
+│   │   └── 📁 seeders/               # Seeders
+│   ├── 📁 routes/
+│   │   └── 📄 api.php                # Routes API
+│   └── 📄 composer.json
+├── 📁 citil-frontend/                # Frontend React
+│   ├── 📁 public/
+│   │   └── 📁 assets/                # Images et ressources
+│   ├── 📁 src/
+│   │   ├── 📁 components/            # Composants réutilisables
+│   │   │   ├── 📄 Button.jsx
+│   │   │   ├── 📄 Card.jsx
+│   │   │   ├── 📄 Hero.jsx
+│   │   │   ├── 📄 ProductCard.jsx
+│   │   │   └── 📄 ui/
+│   │   ├── 📁 pages/                 # Pages de l'application
+│   │   │   ├── 📄 Home.jsx
+│   │   │   ├── 📄 Shop.jsx
+│   │   │   ├── 📄 Trainings.jsx
+│   │   │   ├── 📄 Blog.jsx
+│   │   │   ├── 📄 Profile.jsx
+│   │   │   └── 📁 admin/
+│   │   ├── 📁 context/               # Context React
+│   │   │   ├── 📄 AuthContext.js
+│   │   │   └── 📄 ThemeContext.js
+│   │   ├── 📁 services/              # Services API
+│   │   │   └── 📄 api.js
+│   │   ├── 📁 styles/                # Styles CSS
+│   │   │   └── 📄 responsive.css
+│   │   └── 📁 utils/                 # Utilitaires
+│   │       └── 📄 helpers.js
+│   ├── 📄 package.json
+│   └── 📄 tailwind.config.js
+└── 📄 README.md                      # Documentation
+```
+
+### **Diagramme de déploiement**
+
+```mermaid
+graph TB
+    subgraph "Développement"
+        A[Git Repository] --> B[Local Development]
+        B --> C[Frontend: localhost:3000]
+        B --> D[Backend: localhost:8001]
+    end
+    
+    subgraph "Staging"
+        E[Git Push] --> F[CI/CD Pipeline]
+        F --> G[Build Frontend]
+        F --> H[Build Backend]
+        G --> I[Staging Server]
+        H --> I
+    end
+    
+    subgraph "Production"
+        J[Deployment] --> K[Load Balancer]
+        K --> L[Frontend Server]
+        K --> M[Backend Server]
+        L --> N[CDN]
+        M --> O[Database Server]
+        M --> P[File Storage]
+    end
+    
+    A --> E
+    I --> J
+```
+
+### **Métriques de performance**
+
+```mermaid
+graph LR
+    A[Page Load] --> B[First Contentful Paint]
+    A --> C[Largest Contentful Paint]
+    A --> D[Cumulative Layout Shift]
+    A --> E[Time to Interactive]
+    
+    B --> F[< 1.5s]
+    C --> G[< 2.5s]
+    D --> H[< 0.1]
+    E --> I[< 3.5s]
+    
+    J[API Response] --> K[< 200ms]
+    L[Database Query] --> M[< 50ms]
+    N[Image Load] --> O[< 1s]
+```
+
+Ces schémas et diagrammes fournissent une vue d'ensemble complète de l'architecture, des flux de données, et de la structure du projet CITIL.
 
 ## 📱 Responsive Design
 

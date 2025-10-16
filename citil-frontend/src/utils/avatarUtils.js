@@ -8,7 +8,7 @@ export const getAvatarUrl = (avatarPath) => {
   }
   
   // Construire l'URL complète avec le domaine du backend
-  return `http://localhost:8000${avatarPath}`;
+  return `http://localhost:8001${avatarPath}`;
 };
 
 // Fonction pour vérifier si une image existe
