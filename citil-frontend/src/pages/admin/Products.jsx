@@ -61,7 +61,7 @@ export default function ProductsAdmin() {
 
   function openEdit(p) {
     setEditing(p);
-    setForm({ name: p.name, description: p.description, price: p.price, stock: p.stock, image: p.image, imageFile: null, category: p.category, ref: p.ref || '' });
+    setForm({ name: p.name, description: p.description, price: p.price, stock: p.stock, image: p.image, imageFile: null, category: p.category?.name || '', ref: p.ref || '' });
     setErrors({});
     setOpen(true);
   }
@@ -145,7 +145,7 @@ export default function ProductsAdmin() {
                   </TD>
                   <TD>{Number(p.price).toLocaleString()} CFA</TD>
                   <TD>{p.stock}</TD>
-                  <TD>{p.category}</TD>
+                  <TD>{p.category?.name || 'N/A'}</TD>
                   <TD>{p.stock > 0 ? 'En stock' : 'Rupture'}</TD>
                   <TD className="space-x-2 whitespace-nowrap">
                     <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(p)}>Modifier</Button>
