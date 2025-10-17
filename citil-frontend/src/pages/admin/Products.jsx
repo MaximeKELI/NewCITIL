@@ -39,7 +39,7 @@ export default function ProductsAdmin() {
 
   const filtered = useMemo(() => products.filter(p => (
     (!query || p.name.toLowerCase().includes(query.toLowerCase())) &&
-    (!category || p.category === category)
+    (!category || p.category?.name === category)
   )), [products, query, category]);
 
   function validate(values) {

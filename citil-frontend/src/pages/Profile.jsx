@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext.js';
@@ -56,8 +57,17 @@ export default function Profile() {
 					});
 					setAvatarPreview(getAvatarUrl(userInfo.avatar));
 				}
+				setLoading(false);
 			} catch (error) {
 				console.error('Erreur lors du chargement du profil:', error);
+				
+				// Gestion spécifique des erreurs réseau
+				if (error.isNetworkError) {
+					setError('Erreur de connexion au serveur. Vérifiez que le serveur backend est démarré.');
+				} else {
+					setError(error.message || 'Erreur lors du chargement du profil');
+				}
+				
 				// Fallback vers localStorage si l'API échoue
 				const userData = localStorage.getItem('citil_user');
 				if (userData) {
@@ -73,8 +83,8 @@ export default function Profile() {
 					});
 					setAvatarPreview(getAvatarUrl(userInfo.avatar));
 				}
+				setLoading(false);
 			}
-			setLoading(false);
 		};
 		loadUser();
 	}, [authUser]);

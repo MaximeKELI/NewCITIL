@@ -12,14 +12,14 @@ export default function Shop() {
 	useEffect(() => { ApiService.getProducts().then(setProducts).finally(() => setLoading(false)); }, []);
 
 	const categories = useMemo(() => {
-		const uniqueCategories = ['Tous', ...new Set(products.map(p => p.category).filter(Boolean))];
+		const uniqueCategories = ['Tous', ...new Set(products.map(p => p.category?.name).filter(Boolean))];
 		return uniqueCategories;
 	}, [products]);
 
 	const filtered = useMemo(() => {
 		return products.filter(p => (
 			(!query || p.name.toLowerCase().includes(query.toLowerCase())) &&
-			(!category || category === 'Tous' || p.category === category)
+			(!category || category === 'Tous' || p.category?.name === category)
 		));
 	}, [products, query, category]);
 

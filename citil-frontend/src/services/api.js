@@ -1,6 +1,6 @@
 // import axios from 'axios';
 
-// const API_URL = 'http://localhost:8001'; // adapte si ton backend tourne sur un autre port
+// const API_URL = 'http://localhost:8000'; // adapte si ton backend tourne sur un autre port
 // const api = axios.create({
 //   baseURL: 'http://localhost:8000', // adapte si ton backend tourne sur un autre port
 //   //timeout: 15000,
@@ -239,7 +239,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8001';
+const API_URL = 'http://localhost:8000';
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
@@ -267,11 +267,32 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Gestion des erreurs d'authentification
     if (error.response?.status === 401) {
       localStorage.removeItem('citil_token');
+      localStorage.removeItem('citil_user');
       window.dispatchEvent(new Event('authChanged'));
     }
-    return Promise.reject(error);
+    
+    // Gestion des erreurs réseau
+    if (!error.response) {
+      console.error('Erreur réseau:', error.message);
+      // Créer une erreur plus descriptive pour les erreurs réseau
+      const networkError = new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet et que le serveur est démarré.');
+      networkError.isNetworkError = true;
+      return Promise.reject(networkError);
+    }
+    
+    // Gestion des autres erreurs HTTP
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.error || 
+                        `Erreur ${error.response.status}: ${error.response.statusText}`;
+    
+    const customError = new Error(errorMessage);
+    customError.status = error.response.status;
+    customError.response = error.response;
+    
+    return Promise.reject(customError);
   }
 );
 
