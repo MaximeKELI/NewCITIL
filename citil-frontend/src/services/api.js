@@ -1,6 +1,6 @@
 // import axios from 'axios';
 
-// const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002'; // adapte si ton backend tourne sur un autre port
+// const API_URL = 'http://localhost:8002'; // adapte si ton backend tourne sur un autre port
 // const api = axios.create({
 //   baseURL: 'http://localhost:8000', // adapte si ton backend tourne sur un autre port
 //   //timeout: 15000,
@@ -239,7 +239,7 @@
 
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002';
+const API_URL = 'http://localhost:8002';
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,

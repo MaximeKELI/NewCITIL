@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final - Connectivité API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test { margin: 15px 0; padding: 15px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .loading { background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Final - Connectivité Frontend ↔ API</h1>
+        <p>Cette page teste la connectivité entre le frontend et l'API backend.</p>
+        
+        <div class="info">
+            <h3>📋 Configuration actuelle :</h3>
+            <ul>
+                <li><strong>Frontend :</strong> http://localhost:3000 (React)</li>
+                <li><strong>API Backend :</strong> http://localhost:8002 (PHP Mock API)</li>
+                <li><strong>Base de données :</strong> SQLite (connectée)</li>
+            </ul>
+        </div>
+        
+        <button onclick="runAllTests()">🚀 Lancer tous les tests</button>
+        <button onclick="clearResults()">🗑️ Effacer les résultats</button>
+        
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8002';
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(title, status, message, data = null) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <p><strong>Statut:</strong> ${status === 'success' ? '✅ SUCCÈS' : status === 'error' ? '❌ ERREUR' : '⏳ CHARGEMENT'}</p>
+                <p><strong>Message:</strong> ${message}</p>
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            resultsDiv.appendChild(div);
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+        
+        async function testAPI(endpoint, name) {
+            try {
+                addResult(`Test ${name}`, 'loading', `Test de l'endpoint ${endpoint}...`);
+                const response = await fetch(`${API_URL}${endpoint}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                addResult(`Test ${name}`, 'success', `✅ ${name} fonctionne - ${Array.isArray(data) ? data.length + ' éléments' : 'Données reçues'}`, data);
+                return true;
+            } catch (error) {
+                addResult(`Test ${name}`, 'error', `❌ Erreur ${name}: ${error.message}`);
+                return false;
+            }
+        }
+        
+        async function runAllTests() {
+            clearResults();
+            
+            addResult('Démarrage des tests', 'loading', 'Initialisation des tests de connectivité...');
+            
+            const tests = [
+                ['/api/products', 'Produits'],
+                ['/api/trainings', 'Formations'],
+                ['/api/categories', 'Catégories'],
+                ['/api/blog-posts', 'Articles de blog'],
+                ['/api/blog-categories', 'Catégories de blog']
+            ];
+            
+            let successCount = 0;
+            let totalTests = tests.length;
+            
+            for (const [endpoint, name] of tests) {
+                const success = await testAPI(endpoint, name);
+                if (success) successCount++;
+                await new Promise(resolve => setTimeout(resolve, 500)); // Pause entre les tests
+            }
+            
+            // Résumé final
+            const finalStatus = successCount === totalTests ? 'success' : 'error';
+            const finalMessage = successCount === totalTests 
+                ? `🎉 Tous les tests ont réussi ! (${successCount}/${totalTests})`
+                : `⚠️ ${successCount}/${totalTests} tests ont réussi`;
+                
+            addResult('Résumé final', finalStatus, finalMessage);
+        }
+        
+        // Lancer automatiquement les tests au chargement de la page
+        window.onload = function() {
+            setTimeout(runAllTests, 1000);
+        };
+    </script>
+</body>
+</html>

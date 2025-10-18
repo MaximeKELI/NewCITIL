@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Connectivité Frontend-API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test de Connectivité Frontend ↔ API</h1>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:8002';
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(title, status, message, data = null) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <p><strong>Statut:</strong> ${status === 'success' ? '✅ OK' : '❌ ERREUR'}</p>
+                <p><strong>Message:</strong> ${message}</p>
+                ${data ? `<p><strong>Données:</strong> ${JSON.stringify(data, null, 2)}</p>` : ''}
+            `;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testAPI() {
+            // Test 1: Produits
+            try {
+                addResult('Test API Produits', 'loading', 'Chargement...');
+                const response = await fetch(`${API_URL}/api/products`);
+                const data = await response.json();
+                addResult('Test API Produits', 'success', `Reçu ${data.length} produits`, data);
+            } catch (error) {
+                addResult('Test API Produits', 'error', `Erreur: ${error.message}`);
+            }
+            
+            // Test 2: Formations
+            try {
+                addResult('Test API Formations', 'loading', 'Chargement...');
+                const response = await fetch(`${API_URL}/api/trainings`);
+                const data = await response.json();
+                addResult('Test API Formations', 'success', `Reçu ${data.length} formations`, data);
+            } catch (error) {
+                addResult('Test API Formations', 'error', `Erreur: ${error.message}`);
+            }
+            
+            // Test 3: Catégories
+            try {
+                addResult('Test API Catégories', 'loading', 'Chargement...');
+                const response = await fetch(`${API_URL}/api/categories`);
+                const data = await response.json();
+                addResult('Test API Catégories', 'success', `Reçu ${data.length} catégories`, data);
+            } catch (error) {
+                addResult('Test API Catégories', 'error', `Erreur: ${error.message}`);
+            }
+        }
+        
+        // Lancer les tests
+        testAPI();
+    </script>
+</body>
+</html>
