@@ -14,7 +14,7 @@ class CreateBlogPostsTable extends Migration
             $table->text('excerpt')->nullable(); // Résumé de l'article
             $table->longText('content'); // Contenu complet (HTML ou Markdown)
             $table->string('image')->nullable();
-            $table->foreignId('blog_category_id')->constrained()->onDelete('set null');
+            $table->foreignId('blog_category_id')->constrained()->onDelete('set null')->nullable();
             $table->string('author');
             $table->boolean('published')->default(false);
             $table->timestamp('published_at')->nullable();

@@ -15,7 +15,7 @@ class AdminUserSeeder extends Seeder
             'email' => 'admin@citil.tg',
             'password' => Hash::make('password'), // Le mot de passe sera haché
             'role' => 'admin',
-            'phone' => '98000000'
+            'phone' => '90013802'
         ]);
     }
 }

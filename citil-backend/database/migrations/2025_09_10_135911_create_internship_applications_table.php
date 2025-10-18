@@ -12,7 +12,7 @@ class CreateInternshipApplicationsTable extends Migration
             $table->id();
             $table->string('full_name');
             $table->string('email');
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->string('cv_path'); // Chemin vers le fichier CV uploadé
             $table->text('message')->nullable();
             $table->string('status')->default('received'); // received, reviewed, accepted, rejected
