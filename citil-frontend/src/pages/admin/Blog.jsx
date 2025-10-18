@@ -29,7 +29,7 @@ export default function BlogAdmin() {
   }
 
   function openCreate() {
-    setForm({ title: '', excerpt: '', content: '', image: '', imageFile: null, blog_category_id: categories[0]?.id || '', author: 'Admin', published: false });
+    setForm({ title: '', excerpt: '', content: '', image: '', imageFile: null, blog_category_id: '', author: 'Admin', published: false });
     setErrors({});
     setOpen(true);
   }
@@ -44,45 +44,87 @@ export default function BlogAdmin() {
   async function onSubmit(e) {
     e.preventDefault();
     const e1 = validate(form); setErrors(e1); if (Object.keys(e1).length) return;
-    // Envoi vers backend (multipart)
-    const created = await ApiService.createBlogPost({ ...form });
-    setPosts(prev => [created, ...prev]);
-    setOpen(false);
+    
+    try {
+      const postData = {
+        ...form,
+        published: Boolean(form.published),
+        blog_category_id: Number(form.blog_category_id)
+      };
+      
+      const created = await ApiService.createBlogPost(postData);
+      setPosts(prev => [created, ...prev]);
+      setOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'article:', error);
+      const errorMessage = error.message || 'Une erreur est survenue lors de la création de l\'article.';
+      alert(errorMessage);
+    }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex justify-end">
-        <Button onClick={openCreate}>Nouvel article</Button>
+        <Button onClick={openCreate} className="w-full sm:w-auto">Nouvel article</Button>
       </div>
       <Card title="Articles de blog">
-        <Table>
-          <THead>
-            <TR hover={false}>
-              <TH>Titre</TH>
-              <TH>Auteur</TH>
-              <TH>Date</TH>
-              <TH>Statut</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {posts.map((p) => (
-              <TR key={p.id}>
-                <TD className="max-w-[320px] truncate flex items-center gap-2">
-                  {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
-                  <span className="truncate">{p.title}</span>
-                </TD>
-                <TD>{p.author || 'Admin'}</TD>
-                <TD>{p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}</TD>
-                <TD>{p.published ? 'Publié' : 'Brouillon'}</TD>
+        {/* Desktop Table */}
+        <div className="hidden md:block">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Titre</TH>
+                <TH>Auteur</TH>
+                <TH>Date</TH>
+                <TH>Statut</TH>
               </TR>
-            ))}
-          </TBody>
-        </Table>
+            </THead>
+            <TBody>
+              {posts.map((p) => (
+                <TR key={p.id}>
+                  <TD className="max-w-[320px] truncate flex items-center gap-2">
+                    {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                    <span className="truncate">{p.title}</span>
+                  </TD>
+                  <TD>{p.author || 'Admin'}</TD>
+                  <TD>{p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}</TD>
+                  <TD>{p.published ? 'Publié' : 'Brouillon'}</TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-3">
+          {posts.map((p) => (
+            <div key={p.id} className="bg-white rounded-lg border border-[#AED5E6] p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                {p.image && <img src={p.image} alt="" className="h-12 w-12 object-cover rounded flex-shrink-0" />}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-[#2C3E50] truncate">{p.title}</h3>
+                  <p className="text-sm text-gray-600">Par {p.author || 'Admin'}</p>
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">
+                  {p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}
+                </span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  p.published 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {p.published ? 'Publié' : 'Brouillon'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Créer un article"
-        actions={<><Button variant="secondary" onClick={() => setOpen(false)}>Annuler</Button><Button onClick={onSubmit}>Enregistrer</Button></>}
+      <Modal open={open} onClose={() => setOpen(false)} title="Créer un article" size="lg"
+        actions={<><Button variant="secondary" onClick={() => setOpen(false)} className="w-full sm:w-auto">Annuler</Button><Button onClick={onSubmit} className="w-full sm:w-auto">Enregistrer</Button></>}
       >
         <form onSubmit={onSubmit} className="space-y-3">
           <div>

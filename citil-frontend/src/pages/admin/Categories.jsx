@@ -26,56 +26,105 @@ export default function CategoriesAdmin() {
 
   async function onSubmit(e) {
     e.preventDefault();
-    const e1 = validate(form); setErrors(e1); if (Object.keys(e1).length) return;
-    if (editing) {
-      const updated = await ApiService.updateCategory(editing.id, form);
-      setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
-    } else {
-      const created = await ApiService.createCategory(form);
-      setItems(prev => [created, ...prev]);
+    const e1 = validate(form); 
+    setErrors(e1); 
+    if (Object.keys(e1).length) return;
+    
+    try {
+      if (editing) {
+        const updated = await ApiService.updateCategory(editing.id, form);
+        setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
+      } else {
+        const created = await ApiService.createCategory(form);
+        setItems(prev => [created, ...prev]);
+      }
+      setOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement de la catégorie:', error);
+      
+      // Gestion des erreurs de validation du backend
+      if (error.response?.data?.errors) {
+        const backendErrors = {};
+        Object.keys(error.response.data.errors).forEach(key => {
+          backendErrors[key] = error.response.data.errors[key][0];
+        });
+        setErrors(backendErrors);
+      } else {
+        // Erreur générale
+        const errorMessage = error.message || 'Une erreur est survenue lors de l\'enregistrement de la catégorie.';
+        alert(errorMessage);
+      }
     }
-    setOpen(false);
   }
 
   async function onDelete(id) {
     if (!window.confirm('Supprimer cette catégorie ?')) return;
-    await ApiService.deleteCategory(id);
-    setItems(prev => prev.filter(i => i.id !== id));
+    
+    try {
+      await ApiService.deleteCategory(id);
+      setItems(prev => prev.filter(i => i.id !== id));
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la catégorie:', error);
+      const errorMessage = error.message || 'Impossible de supprimer cette catégorie. Elle est peut-être utilisée par des produits.';
+      alert(errorMessage);
+    }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex justify-end">
-        <Button onClick={openCreate}>Ajouter une catégorie</Button>
+        <Button onClick={openCreate} className="w-full sm:w-auto">Ajouter une catégorie</Button>
       </div>
       <Card title="Catégories">
-        <Table>
-          <THead>
-            <TR hover={false}>
-              <TH>Nom</TH>
-              <TH>Slug</TH>
-              <TH>Description</TH>
-              <TH>Actions</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {items.map(c => (
-              <TR key={c.id}>
-                <TD className="font-medium">{c.name}</TD>
-                <TD>{c.slug}</TD>
-                <TD className="max-w-[360px] truncate">{c.description}</TD>
-                <TD className="space-x-2">
-                  <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(c)}>Modifier</Button>
-                  <Button className="px-2 py-1 text-xs" onClick={() => onDelete(c.id)}>Supprimer</Button>
-                </TD>
+        {/* Desktop Table */}
+        <div className="hidden md:block">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Nom</TH>
+                <TH>Slug</TH>
+                <TH>Description</TH>
+                <TH>Actions</TH>
               </TR>
-            ))}
-          </TBody>
-        </Table>
+            </THead>
+            <TBody>
+              {items.map(c => (
+                <TR key={c.id}>
+                  <TD className="font-medium">{c.name}</TD>
+                  <TD>{c.slug}</TD>
+                  <TD className="max-w-[360px] truncate">{c.description}</TD>
+                  <TD className="space-x-2">
+                    <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(c)}>Modifier</Button>
+                    <Button className="px-2 py-1 text-xs" onClick={() => onDelete(c.id)}>Supprimer</Button>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-3">
+          {items.map(c => (
+            <div key={c.id} className="bg-white rounded-lg border border-[#AED5E6] p-4 space-y-3">
+              <div>
+                <h3 className="font-medium text-[#2C3E50]">{c.name}</h3>
+                <p className="text-sm text-gray-600">Slug: {c.slug}</p>
+              </div>
+              {c.description && (
+                <p className="text-sm text-gray-700">{c.description}</p>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button variant="secondary" className="flex-1 text-xs" onClick={() => openEdit(c)}>Modifier</Button>
+                <Button className="flex-1 text-xs" onClick={() => onDelete(c.id)}>Supprimer</Button>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
 
       <Modal open={open} onClose={() => setOpen(false)} title={editing ? 'Modifier la catégorie' : 'Ajouter une catégorie'}
-        actions={<><Button variant="secondary" onClick={() => setOpen(false)}>Annuler</Button><Button onClick={onSubmit}>Enregistrer</Button></>}
+        actions={<><Button variant="secondary" onClick={() => setOpen(false)} className="w-full sm:w-auto">Annuler</Button><Button onClick={onSubmit} className="w-full sm:w-auto">Enregistrer</Button></>}
       >
         <form onSubmit={onSubmit} className="space-y-3">
           <div>

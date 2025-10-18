@@ -19,12 +19,25 @@ class BlogPostController extends Controller
             'title' => 'required|string|max:255',
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
-            'image' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'blog_category_id' => 'required|exists:blog_categories,id',
             'author' => 'required|string',
-            'published' => 'boolean',
+            'published' => 'nullable|in:0,1,true,false',
             'published_at' => 'nullable|date'
         ]);
+
+        // Convertir les chaînes booléennes en booléens
+        if (isset($validated['published'])) {
+            $validated['published'] = in_array($validated['published'], ['1', 'true', true], true);
+        }
+
+        // Gérer l'upload de l'image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->storeAs('public/blog', $imageName);
+            $validated['image'] = 'blog/' . $imageName;
+        }
 
         $post = BlogPost::create($validated);
         return response()->json($post, 201);
@@ -50,12 +63,30 @@ class BlogPostController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'excerpt' => 'nullable|string',
             'content' => 'sometimes|required|string',
-            'image' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'blog_category_id' => 'sometimes|required|exists:blog_categories,id',
             'author' => 'sometimes|required|string',
-            'published' => 'boolean',
+            'published' => 'nullable|in:0,1,true,false',
             'published_at' => 'nullable|date'
         ]);
+
+        // Convertir les chaînes booléennes en booléens
+        if (isset($validated['published'])) {
+            $validated['published'] = in_array($validated['published'], ['1', 'true', true], true);
+        }
+
+        // Gérer l'upload de l'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($post->image && \Storage::exists('public/' . $post->image)) {
+                \Storage::delete('public/' . $post->image);
+            }
+            
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->storeAs('public/blog', $imageName);
+            $validated['image'] = 'blog/' . $imageName;
+        }
 
         $post->update($validated);
         return response()->json($post);

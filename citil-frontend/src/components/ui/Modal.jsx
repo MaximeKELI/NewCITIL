@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Modal({ open, onClose, title, children, actions }) {
+export default function Modal({ open, onClose, title, children, actions, size = 'md' }) {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -16,7 +16,13 @@ export default function Modal({ open, onClose, title, children, actions }) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 24, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-            className="relative w-full max-w-lg rounded-xl bg-white/90 backdrop-blur border border-[#AED5E6] shadow-xl"
+            className={`relative w-full max-h-[90vh] overflow-y-auto rounded-xl bg-white/90 backdrop-blur border border-[#AED5E6] shadow-xl ${
+              size === 'sm' ? 'max-w-sm' : 
+              size === 'md' ? 'max-w-lg' : 
+              size === 'lg' ? 'max-w-2xl' : 
+              size === 'xl' ? 'max-w-4xl' : 
+              'max-w-lg'
+            }`}
             role="dialog"
             aria-modal="true"
           >
@@ -28,7 +34,7 @@ export default function Modal({ open, onClose, title, children, actions }) {
               {children}
             </div>
             {actions && (
-              <div className="flex items-center justify-end gap-2 p-4 border-t border-[#AED5E6] bg-[#F9F9EA] rounded-b-xl">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 p-4 border-t border-[#AED5E6] bg-[#F9F9EA] rounded-b-xl">
                 {actions}
               </div>
             )}

@@ -32,6 +32,9 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
 import NotFound from './pages/NotFound.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
+import NotificationContainer from './components/NotificationContainer.jsx';
+import { NotificationProvider, useNotificationContext } from './context/NotificationContext.js';
 
 const PageWrapper = ({ children }) => (
 	<motion.main
@@ -93,10 +96,16 @@ const ScrollToTop = () => {
 
 function AppContent() {
 	const location = useLocation();
+	const { notifications, removeNotification } = useNotificationContext();
+	
 	return (
 		<div className="flex min-h-screen flex-col">
 			<Navbar />
 			<ScrollToTop />
+			<NotificationContainer 
+				notifications={notifications} 
+				onRemove={removeNotification} 
+			/>
 			<AnimatePresence mode="wait">
 				<PageWrapper key={location.pathname}>
 					<Routes location={location}>
@@ -138,8 +147,12 @@ function AppContent() {
 
 export default function App() {
 	return (
-		<AuthProvider>
-			<AppContent />
-		</AuthProvider>
+		<ErrorBoundary>
+			<NotificationProvider>
+				<AuthProvider>
+					<AppContent />
+				</AuthProvider>
+			</NotificationProvider>
+		</ErrorBoundary>
 	);
 }

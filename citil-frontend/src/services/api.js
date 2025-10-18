@@ -1,6 +1,6 @@
 // import axios from 'axios';
 
-// const API_URL = 'http://localhost:8000'; // adapte si ton backend tourne sur un autre port
+// const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002'; // adapte si ton backend tourne sur un autre port
 // const api = axios.create({
 //   baseURL: 'http://localhost:8000', // adapte si ton backend tourne sur un autre port
 //   //timeout: 15000,
@@ -239,7 +239,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002';
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
@@ -426,7 +426,12 @@ export const ApiService = {
             if (key === 'imageFile' && value instanceof File) {
                 formData.append('image', value);
             } else if (key !== 'imageFile' && value !== undefined && value !== null) {
-                formData.append(key, value);
+                // Convertir les booléens en chaînes pour FormData
+                if (typeof value === 'boolean') {
+                    formData.append(key, value ? '1' : '0');
+                } else {
+                    formData.append(key, value);
+                }
             }
         });
         const { data } = await api.post('/api/admin/products', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -438,7 +443,12 @@ export const ApiService = {
             if (key === 'imageFile' && value instanceof File) {
                 formData.append('image', value);
             } else if (key !== 'imageFile' && value !== undefined && value !== null) {
-                formData.append(key, value);
+                // Convertir les booléens en chaînes pour FormData
+                if (typeof value === 'boolean') {
+                    formData.append(key, value ? '1' : '0');
+                } else {
+                    formData.append(key, value);
+                }
             }
         });
         formData.append('_method', 'PUT');
@@ -462,7 +472,12 @@ export const ApiService = {
                 if (key === 'imageFile' && training[key] instanceof File) {
                     formData.append('image', training[key]);
                 } else if (key !== 'imageFile' && training[key] !== null && training[key] !== undefined) {
-                    formData.append(key, training[key]);
+                    // Convertir les booléens en chaînes pour FormData
+                    if (typeof training[key] === 'boolean') {
+                        formData.append(key, training[key] ? '1' : '0');
+                    } else {
+                        formData.append(key, training[key]);
+                    }
                 }
             });
             
@@ -482,7 +497,12 @@ export const ApiService = {
                 if (key === 'imageFile' && updates[key] instanceof File) {
                     formData.append('image', updates[key]);
                 } else if (key !== 'imageFile' && updates[key] !== null && updates[key] !== undefined) {
-                    formData.append(key, updates[key]);
+                    // Convertir les booléens en chaînes pour FormData
+                    if (typeof updates[key] === 'boolean') {
+                        formData.append(key, updates[key] ? '1' : '0');
+                    } else {
+                        formData.append(key, updates[key]);
+                    }
                 }
             });
             formData.append('_method', 'PUT');
@@ -518,7 +538,12 @@ export const ApiService = {
                 if (key === 'imageFile' && post[key] instanceof File) {
                     formData.append('image', post[key]);
                 } else if (key !== 'imageFile' && post[key] !== null && post[key] !== undefined) {
-                    formData.append(key, post[key]);
+                    // Convertir les booléens en chaînes pour FormData
+                    if (typeof post[key] === 'boolean') {
+                        formData.append(key, post[key] ? '1' : '0');
+                    } else {
+                        formData.append(key, post[key]);
+                    }
                 }
             });
             
@@ -538,7 +563,12 @@ export const ApiService = {
                 if (key === 'imageFile' && updates[key] instanceof File) {
                     formData.append('image', updates[key]);
                 } else if (key !== 'imageFile' && updates[key] !== null && updates[key] !== undefined) {
-                    formData.append(key, updates[key]);
+                    // Convertir les booléens en chaînes pour FormData
+                    if (typeof updates[key] === 'boolean') {
+                        formData.append(key, updates[key] ? '1' : '0');
+                    } else {
+                        formData.append(key, updates[key]);
+                    }
                 }
             });
             formData.append('_method', 'PUT');

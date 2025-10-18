@@ -43,12 +43,16 @@ export default function Sidebar() {
   }, [onKeyDown]);
 
   return (
-    <div className="sticky top-0 z-30">
+    <>
       {/* Mobile burger */}
-      <div className="md:hidden flex items-center justify-between p-3">
+      <div className="md:hidden flex items-center justify-between p-3 bg-white/80 backdrop-blur border-b border-[#AED5E6]">
+        <div className="flex items-center gap-2">
+          <img src="/assets/images/Logo CITIL.png" alt="CITIL" className="h-6 w-6 object-contain" />
+          <span className="font-semibold text-[#2C3E50]">CITIL Admin</span>
+        </div>
         <button
           onClick={() => setOpen(true)}
-          className="px-3 py-2 rounded-md bg-[#3498DB] text-white"
+          className="px-3 py-2 rounded-md bg-[#3498DB] text-white hover:bg-[#2980B9] transition-colors"
           aria-label="Ouvrir le menu"
         >
           ☰
@@ -137,6 +141,6 @@ export default function Sidebar() {
           </>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }

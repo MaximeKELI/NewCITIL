@@ -13,6 +13,11 @@ class Product extends Model
         'name', 'description', 'price', 'stock', 'image', 'reference', 'category_id', 'is_active'
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'price' => 'decimal:2'
+    ];
+
     public function category()
     {
         return $this->belongsTo(Category::class);

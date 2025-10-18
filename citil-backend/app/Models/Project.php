@@ -14,6 +14,7 @@ class Project extends Model
     ];
 
     protected $casts = [
-        'technologies' => 'array'
+        'technologies' => 'array',
+        'is_published' => 'boolean'
     ];
 }

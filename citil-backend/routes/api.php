@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\InternshipApplicationController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\TestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +69,10 @@ Route::get('/projects/{id}', [ProjectController::class, 'show']);
 
 // Candidatures de stage (soumission ouverte)
 Route::post('/internship-applications', [InternshipApplicationController::class, 'store']);
+
+// Test API
+Route::get('/test', [TestController::class, 'test']);
+Route::get('/test-trainings', [TestController::class, 'trainings']);
 
 /*
 |--------------------------------------------------------------------------

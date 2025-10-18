@@ -18,9 +18,11 @@ export default function TrainingsAdmin() {
   const validate = (v) => {
     const e = {};
     if (!v.title) e.title = 'Titre requis';
+    if (!v.description) e.description = 'Description requise';
     if (!v.start_date) e.start_date = 'Date requise';
     if (!v.price || Number(v.price) <= 0) e.price = 'Prix invalide';
     if (!v.duration_hours) e.duration_hours = 'Durée requise';
+    if (!v.schedule) e.schedule = 'Horaires requis';
     if (!v.image && !v.imageFile) e.image = 'Image requise';
     return e;
   };
@@ -38,14 +40,27 @@ export default function TrainingsAdmin() {
   async function onSubmit(e) {
     e.preventDefault();
     const e1 = validate(form); setErrors(e1); if (Object.keys(e1).length) return;
-    if (editing) {
-      const updated = await ApiService.updateTraining(editing.id, { ...form, image: form.image, price: Number(form.price) });
-      setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
-    } else {
-      const created = await ApiService.createTraining({ ...form, image: form.image, price: Number(form.price) });
-      setItems(prev => [created, ...prev]);
+    
+    try {
+      const trainingData = {
+        ...form,
+        price: Number(form.price),
+        is_active: Boolean(form.is_active)
+      };
+
+      if (editing) {
+        const updated = await ApiService.updateTraining(editing.id, trainingData);
+        setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
+      } else {
+        const created = await ApiService.createTraining(trainingData);
+        setItems(prev => [created, ...prev]);
+      }
+      setOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement de la formation:', error);
+      const errorMessage = error.message || 'Une erreur est survenue lors de l\'enregistrement de la formation.';
+      alert(errorMessage);
     }
-    setOpen(false);
   }
 
   async function onDelete(id) {
@@ -55,53 +70,97 @@ export default function TrainingsAdmin() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex justify-end">
-        <Button onClick={openCreate}>Ajouter une formation</Button>
+        <Button onClick={openCreate} className="w-full sm:w-auto">Ajouter une formation</Button>
       </div>
       <Card title="Formations">
-        <Table>
-          <THead>
-            <TR hover={false}>
-              <TH>Titre</TH>
-              <TH>Date</TH>
-              <TH>Durée</TH>
-              <TH>Prix</TH>
-              <TH>Horaires</TH>
-              <TH>Actions</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {items.length === 0 ? (
-              <TR>
-                <TD colSpan="6" className="text-center py-8 text-gray-500">
-                  Aucune formation trouvée. Commencez par ajouter votre première formation.
-                </TD>
+        {/* Desktop Table */}
+        <div className="hidden md:block">
+          <Table>
+            <THead>
+              <TR hover={false}>
+                <TH>Titre</TH>
+                <TH>Date</TH>
+                <TH>Durée</TH>
+                <TH>Prix</TH>
+                <TH>Horaires</TH>
+                <TH>Actions</TH>
               </TR>
-            ) : (
-              items.map(t => (
-                <TR key={t.id}>
-                  <TD className="font-medium max-w-[260px] truncate flex items-center gap-2">
-                    {t.image && <img src={t.image} alt="" className="h-8 w-8 object-cover rounded" />}
-                    <span className="truncate">{t.title}</span>
-                  </TD>
-                  <TD>{t.start_date}</TD>
-                  <TD>{t.duration_hours}h</TD>
-                  <TD>{Number(t.price).toLocaleString()} CFA</TD>
-                  <TD>{t.schedule || '-'}</TD>
-                  <TD className="space-x-2">
-                    <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(t)}>Modifier</Button>
-                    <Button className="px-2 py-1 text-xs" onClick={() => onDelete(t.id)}>Supprimer</Button>
+            </THead>
+            <TBody>
+              {items.length === 0 ? (
+                <TR>
+                  <TD colSpan="6" className="text-center py-8 text-gray-500">
+                    Aucune formation trouvée. Commencez par ajouter votre première formation.
                   </TD>
                 </TR>
-              ))
-            )}
-          </TBody>
-        </Table>
+              ) : (
+                items.map(t => (
+                  <TR key={t.id}>
+                    <TD className="font-medium max-w-[260px] truncate flex items-center gap-2">
+                      {t.image && <img src={t.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                      <span className="truncate">{t.title}</span>
+                    </TD>
+                    <TD>{t.start_date}</TD>
+                    <TD>{t.duration_hours}h</TD>
+                    <TD>{Number(t.price).toLocaleString()} CFA</TD>
+                    <TD>{t.schedule || '-'}</TD>
+                    <TD className="space-x-2">
+                      <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => openEdit(t)}>Modifier</Button>
+                      <Button className="px-2 py-1 text-xs" onClick={() => onDelete(t.id)}>Supprimer</Button>
+                    </TD>
+                  </TR>
+                ))
+              )}
+            </TBody>
+          </Table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-3">
+          {items.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              Aucune formation trouvée. Commencez par ajouter votre première formation.
+            </div>
+          ) : (
+            items.map(t => (
+              <div key={t.id} className="bg-white rounded-lg border border-[#AED5E6] p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  {t.image && <img src={t.image} alt="" className="h-12 w-12 object-cover rounded flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-[#2C3E50] truncate">{t.title}</h3>
+                    <p className="text-sm text-gray-600">Date: {t.start_date}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-600">Durée:</span>
+                    <span className="ml-1 font-medium">{t.duration_hours}h</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Prix:</span>
+                    <span className="ml-1 font-medium">{Number(t.price).toLocaleString()} CFA</span>
+                  </div>
+                </div>
+                {t.schedule && (
+                  <div className="text-sm">
+                    <span className="text-gray-600">Horaires:</span>
+                    <span className="ml-1">{t.schedule}</span>
+                  </div>
+                )}
+                <div className="flex gap-2 pt-2">
+                  <Button variant="secondary" className="flex-1 text-xs" onClick={() => openEdit(t)}>Modifier</Button>
+                  <Button className="flex-1 text-xs" onClick={() => onDelete(t.id)}>Supprimer</Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </Card>
 
-      <Modal open={open} onClose={() => setOpen(false)} title={editing ? 'Modifier la formation' : 'Ajouter une formation'}
-        actions={<><Button variant="secondary" onClick={() => setOpen(false)}>Annuler</Button><Button onClick={onSubmit}>Enregistrer</Button></>}
+      <Modal open={open} onClose={() => setOpen(false)} title={editing ? 'Modifier la formation' : 'Ajouter une formation'} size="lg"
+        actions={<><Button variant="secondary" onClick={() => setOpen(false)} className="w-full sm:w-auto">Annuler</Button><Button onClick={onSubmit} className="w-full sm:w-auto">Enregistrer</Button></>}
       >
         <form onSubmit={onSubmit} className="space-y-3">
           <div>
