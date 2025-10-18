@@ -7,7 +7,7 @@ async function testConnectivity() {
     try {
         // Test 1: Frontend React
         console.log('1. Test du Frontend React...');
-        const frontendResponse = await axios.get('http://localhost:3000', { timeout: 5000 });
+        const frontendResponse = await axios.get('http://localhost:3002', { timeout: 5000 });
         console.log('   ✅ Frontend React: OK (Status:', frontendResponse.status, ')');
     } catch (error) {
         console.log('   ❌ Frontend React: ERREUR -', error.message);
@@ -44,7 +44,7 @@ async function testConnectivity() {
     }
     
     console.log('\n🎯 Résumé:');
-    console.log('   Frontend React: http://localhost:3000');
+    console.log('   Frontend React: http://localhost:3002');
     console.log('   Backend API: http://localhost:8002');
     console.log('   Base de données: SQLite (connectée)');
     console.log('\n✨ Tous les composants sont connectés et fonctionnels !');

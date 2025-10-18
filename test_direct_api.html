@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Direct API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-result { margin: 10px 0; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .data { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Direct API</h1>
+        <p>Test exact des appels que fait React vers l'API</p>
+        
+        <div id="results"></div>
+        
+        <button onclick="testAPI()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            🚀 Tester l'API
+        </button>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8002';
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        async function testAPI() {
+            document.getElementById('results').innerHTML = '';
+            
+            addResult('🚀 Démarrage du test API...', 'info');
+            
+            try {
+                addResult('📡 Test de l\'endpoint /api/products...', 'info');
+                
+                const response = await fetch(`${API_URL}/api/products`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                addResult(`📊 Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ Données reçues: ${data.length} produits`, 'success');
+                    
+                    const dataDiv = document.createElement('div');
+                    dataDiv.className = 'data';
+                    dataDiv.innerHTML = `<strong>Premier produit:</strong><br>${JSON.stringify(data[0], null, 2)}`;
+                    document.getElementById('results').appendChild(dataDiv);
+                    
+                    addResult('🎉 Test réussi ! L\'API fonctionne parfaitement.', 'success');
+                } else {
+                    addResult(`❌ Erreur HTTP: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Erreur de connexion: ${error.message}`, 'error');
+                addResult('💡 Vérifiez que le backend est démarré sur le port 8002', 'info');
+            }
+        }
+        
+        // Test automatique au chargement
+        window.onload = function() {
+            setTimeout(testAPI, 1000);
+        };
+    </script>
+</body>
+</html>

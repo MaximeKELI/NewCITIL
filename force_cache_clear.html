@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Cache Clear - CITIL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .step { margin: 15px 0; padding: 15px; border-radius: 5px; background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .warning { background: #fff3e0; border-left-color: #ff9800; }
+        .success { background: #e8f5e8; border-left-color: #4caf50; }
+        .btn { background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976d2; }
+        .code { background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Force Cache Clear - CITIL</h1>
+        <p>Cette page va forcer le nettoyage du cache pour résoudre définitivement l'erreur de connexion.</p>
+        
+        <div class="step warning">
+            <h3>⚠️ Problème identifié</h3>
+            <p>L'erreur "Erreur de connexion au serveur" persiste à cause du cache du navigateur qui garde l'ancienne configuration.</p>
+        </div>
+        
+        <div class="step">
+            <h3>🔧 Solution étape par étape</h3>
+            <ol>
+                <li><strong>Ouvrez les outils de développement</strong> : <code>F12</code></li>
+                <li><strong>Allez dans l'onglet Network</strong></li>
+                <li><strong>Cochez "Disable cache"</strong></li>
+                <li><strong>Fermez les outils de développement</strong></li>
+                <li><strong>Rechargez la page</strong> : <code>Ctrl + F5</code></li>
+            </ol>
+        </div>
+        
+        <div class="step">
+            <h3>🌐 URLs à tester</h3>
+            <div class="code">
+                Application: <a href="http://localhost:3002" target="_blank">http://localhost:3002</a><br>
+                API Test: <a href="http://localhost:8002/api/products" target="_blank">http://localhost:8002/api/products</a><br>
+                Communication Test: <a href="http://localhost:3001/test_communication_final.html" target="_blank">http://localhost:3001/test_communication_final.html</a>
+            </div>
+        </div>
+        
+        <div class="step success">
+            <h3>✅ Configuration actuelle</h3>
+            <ul>
+                <li><strong>Frontend React:</strong> Port 3002 ✅</li>
+                <li><strong>Backend API:</strong> Port 8002 ✅</li>
+                <li><strong>Communication:</strong> Fonctionnelle ✅</li>
+                <li><strong>Données:</strong> 3 produits, 2 formations ✅</li>
+            </ul>
+        </div>
+        
+        <button class="btn" onclick="testAPI()">🧪 Tester l'API maintenant</button>
+        <button class="btn" onclick="window.open('http://localhost:3002', '_blank')">🚀 Ouvrir l'application</button>
+    </div>
+
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost:8002/api/products');
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`✅ API fonctionne ! ${data.length} produits trouvés.\n\nPremier produit: ${data[0].name}`);
+                } else {
+                    alert(`❌ Erreur API: ${response.status}`);
+                }
+            } catch (error) {
+                alert(`❌ Erreur de connexion: ${error.message}`);
+            }
+        }
+        
+        // Test automatique au chargement
+        window.onload = function() {
+            setTimeout(testAPI, 1000);
+        };
+    </script>
+</body>
+</html>

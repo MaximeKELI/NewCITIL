@@ -23,10 +23,10 @@ export const AuthProvider = ({ children }) => {
           // Vérifier la validité du token avec le serveur
           try {
             const response = await ApiService.getUserInfo();
-            if (response.user_info) {
+            if (response.user) {
               // Token valide, mettre à jour les données utilisateur
-              setUser(response.user_info);
-              localStorage.setItem('citil_user', JSON.stringify(response.user_info));
+              setUser(response.user);
+              localStorage.setItem('citil_user', JSON.stringify(response.user));
             } else {
               throw new Error('Token invalide');
             }

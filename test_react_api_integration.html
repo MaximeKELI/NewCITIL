@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Intégration React-API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-result { margin: 10px 0; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .status { font-weight: bold; font-size: 18px; }
+        .data-preview { background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Test Intégration React-API</h1>
+            <p>Simulation des appels API que fait l'application React</p>
+        </div>
+        
+        <div id="results"></div>
+        
+        <div class="test-result info">
+            <h3>📋 Test des endpoints utilisés par React</h3>
+            <p>Cette page simule exactement les appels API que fait l'application React pour charger les données.</p>
+            <button class="btn" onclick="testReactAPI()">🚀 Tester l'intégration React-API</button>
+            <button class="btn" onclick="clearResults()">🗑️ Effacer</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8002';
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `<span class="status">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span> ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testReactAPI() {
+            clearResults();
+            addResult('🚀 Test de l\'intégration React-API en cours...', 'info');
+            
+            // Test 1: Produits (comme dans l'application React)
+            try {
+                addResult('📦 Test des produits...', 'info');
+                const productsResponse = await fetch(`${API_URL}/api/products`);
+                if (productsResponse.ok) {
+                    const products = await productsResponse.json();
+                    addResult(`✅ Produits: ${products.length} éléments récupérés`, 'success');
+                    
+                    // Afficher un aperçu des données
+                    const preview = document.createElement('div');
+                    preview.className = 'data-preview';
+                    preview.innerHTML = `<strong>Données des produits:</strong><br>${JSON.stringify(products.slice(0, 2), null, 2)}...`;
+                    document.getElementById('results').appendChild(preview);
+                } else {
+                    addResult(`❌ Produits: Erreur HTTP ${productsResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Produits: ${error.message}`, 'error');
+            }
+            
+            // Test 2: Formations
+            try {
+                addResult('🎓 Test des formations...', 'info');
+                const trainingsResponse = await fetch(`${API_URL}/api/trainings`);
+                if (trainingsResponse.ok) {
+                    const trainings = await trainingsResponse.json();
+                    addResult(`✅ Formations: ${trainings.length} éléments récupérés`, 'success');
+                } else {
+                    addResult(`❌ Formations: Erreur HTTP ${trainingsResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Formations: ${error.message}`, 'error');
+            }
+            
+            // Test 3: Catégories
+            try {
+                addResult('📂 Test des catégories...', 'info');
+                const categoriesResponse = await fetch(`${API_URL}/api/categories`);
+                if (categoriesResponse.ok) {
+                    const categories = await categoriesResponse.json();
+                    addResult(`✅ Catégories: ${categories.length} éléments récupérés`, 'success');
+                } else {
+                    addResult(`❌ Catégories: Erreur HTTP ${categoriesResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Catégories: ${error.message}`, 'error');
+            }
+            
+            // Test 4: Articles de blog
+            try {
+                addResult('📰 Test des articles de blog...', 'info');
+                const blogResponse = await fetch(`${API_URL}/api/blog-posts`);
+                if (blogResponse.ok) {
+                    const blogPosts = await blogResponse.json();
+                    addResult(`✅ Articles de blog: ${blogPosts.length} éléments récupérés`, 'success');
+                } else {
+                    addResult(`❌ Articles de blog: Erreur HTTP ${blogResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Articles de blog: ${error.message}`, 'error');
+            }
+            
+            // Test 5: Test de l'endpoint de test
+            try {
+                addResult('🧪 Test de l\'endpoint de test...', 'info');
+                const testResponse = await fetch(`${API_URL}/api/test`);
+                if (testResponse.ok) {
+                    const testData = await testResponse.json();
+                    addResult(`✅ Endpoint de test: ${testData.message || 'OK'}`, 'success');
+                } else {
+                    addResult(`❌ Endpoint de test: Erreur HTTP ${testResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Endpoint de test: ${error.message}`, 'error');
+            }
+            
+            addResult('🎉 Test d\'intégration React-API terminé !', 'success');
+            addResult('🌐 L\'application React devrait maintenant fonctionner correctement sur http://localhost:3000', 'info');
+        }
+        
+        // Démarrer le test automatiquement
+        window.onload = function() {
+            setTimeout(testReactAPI, 1000);
+        };
+    </script>
+</body>
+</html>

@@ -1,8 +1,9 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: http://localhost:3002');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, Accept');
+header('Access-Control-Allow-Credentials: true');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -46,7 +47,8 @@ if (strpos($path, '/api/trainings') !== false && $method === 'GET') {
             'price' => 12000,
             'is_active' => true,
             'stock' => 15,
-            'category_id' => 1
+            'category_id' => 1,
+            'reference' => 'ARDUINO-UNO-001'
         ],
         [
             'id' => 2,
@@ -55,7 +57,18 @@ if (strpos($path, '/api/trainings') !== false && $method === 'GET') {
             'price' => 3500,
             'is_active' => true,
             'stock' => 42,
-            'category_id' => 2
+            'category_id' => 1,
+            'reference' => 'DS18B20-001'
+        ],
+        [
+            'id' => 3,
+            'name' => 'Raspberry Pi 4',
+            'description' => 'Mini-ordinateur polyvalent pour projets IoT',
+            'price' => 150000,
+            'is_active' => true,
+            'stock' => 6,
+            'category_id' => 1,
+            'reference' => 'RPI4-001'
         ]
     ];
     echo json_encode($data);
@@ -109,6 +122,53 @@ if (strpos($path, '/api/trainings') !== false && $method === 'GET') {
         ]
     ];
     echo json_encode($data);
+} elseif (strpos($path, '/api/auth/login') !== false && $method === 'POST') {
+    // Endpoint de connexion admin
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (isset($input['email']) && isset($input['password'])) {
+        // Identifiants administrateur
+        if ($input['email'] === 'admin@citil.com' && $input['password'] === 'admin123') {
+            $response = [
+                'success' => true,
+                'message' => 'Connexion réussie',
+                'user' => [
+                    'id' => 1,
+                    'name' => 'Administrateur CITIL',
+                    'email' => 'admin@citil.com',
+                    'role' => 'admin',
+                    'avatar' => null
+                ],
+                'token' => 'mock_admin_token_' . time()
+            ];
+            echo json_encode($response);
+        } else {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Identifiants incorrects'
+            ]);
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Email et mot de passe requis'
+        ]);
+    }
+} elseif (strpos($path, '/api/auth/me') !== false && $method === 'GET') {
+    // Endpoint pour récupérer les infos de l'utilisateur connecté
+    $response = [
+        'success' => true,
+        'user' => [
+            'id' => 1,
+            'name' => 'Administrateur CITIL',
+            'email' => 'admin@citil.com',
+            'role' => 'admin',
+            'avatar' => null
+        ]
+    ];
+    echo json_encode($response);
 } else {
     http_response_code(404);
     echo json_encode(['error' => 'Endpoint not found']);

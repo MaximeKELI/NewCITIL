@@ -308,14 +308,14 @@ export const ApiService = {
     // --- AUTHENTIFICATION ---
     login: async (email, password) => {
         try {
-            const response = await api.post('/api/login', { email, password });
-            const { token, user_info } = response.data;
+            const response = await api.post('/api/auth/login', { email, password });
+            const { token, user } = response.data;
             
             localStorage.setItem('citil_token', token);
-            localStorage.setItem('citil_user', JSON.stringify(user_info));
+            localStorage.setItem('citil_user', JSON.stringify(user));
             window.dispatchEvent(new Event('authChanged'));
             
-            return { token, user: user_info };
+            return { token, user: user };
         } catch (error) {
             const message = error.response?.data?.message || 'Erreur de connexion';
             throw new Error(message);
@@ -366,7 +366,7 @@ export const ApiService = {
 
     getUserInfo: async () => {
         try {
-            const response = await api.get('/api/user');
+            const response = await api.get('/api/auth/me');
             return response.data;
         } catch (error) {
             const message = error.response?.data?.message || 'Erreur lors de la récupération des informations utilisateur';
