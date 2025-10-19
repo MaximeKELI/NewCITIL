@@ -169,6 +169,131 @@ if (strpos($path, '/api/trainings') !== false && $method === 'GET') {
         ]
     ];
     echo json_encode($response);
+} elseif (strpos($path, '/api/admin/users') !== false && $method === 'GET') {
+    // Endpoint pour récupérer les utilisateurs (admin)
+    $data = [
+        [
+            'id' => 1,
+            'name' => 'Administrateur CITIL',
+            'email' => 'admin@citil.com',
+            'role' => 'admin',
+            'created_at' => '2025-01-01'
+        ],
+        [
+            'id' => 2,
+            'name' => 'Client Test',
+            'email' => 'client@test.com',
+            'role' => 'client',
+            'created_at' => '2025-01-15'
+        ]
+    ];
+    echo json_encode($data);
+} elseif (strpos($path, '/api/admin/internship-applications') !== false && $method === 'GET') {
+    // Endpoint pour récupérer les candidatures (admin)
+    $data = [
+        [
+            'id' => 1,
+            'full_name' => 'Kodjo A.',
+            'email' => 'kodjo@exemple.com',
+            'phone' => '+228 90 00 00 00',
+            'message' => 'Passionné par l\'IoT',
+            'status' => 'En attente',
+            'created_at' => '2025-01-10'
+        ],
+        [
+            'id' => 2,
+            'full_name' => 'Aicha B.',
+            'email' => 'aicha@exemple.com',
+            'phone' => '+228 91 11 22 33',
+            'message' => 'Développeuse web',
+            'status' => 'Validé',
+            'created_at' => '2025-01-12'
+        ]
+    ];
+    echo json_encode($data);
+} elseif (strpos($path, '/api/admin/products') !== false && $method === 'POST') {
+    // Endpoint pour créer un produit (admin)
+    $input = json_decode(file_get_contents('php://input'), true);
+    $response = [
+        'success' => true,
+        'message' => 'Produit créé avec succès',
+        'product' => [
+            'id' => rand(100, 999),
+            'name' => $input['name'],
+            'description' => $input['description'],
+            'price' => $input['price'],
+            'stock' => $input['stock'],
+            'is_active' => $input['is_active'] ?? true,
+            'category_id' => $input['category_id'] ?? 1,
+            'reference' => $input['reference'] ?? 'REF-' . rand(1000, 9999)
+        ]
+    ];
+    echo json_encode($response);
+} elseif (strpos($path, '/api/admin/trainings') !== false && $method === 'POST') {
+    // Endpoint pour créer une formation (admin)
+    $input = json_decode(file_get_contents('php://input'), true);
+    $response = [
+        'success' => true,
+        'message' => 'Formation créée avec succès',
+        'training' => [
+            'id' => rand(100, 999),
+            'title' => $input['title'],
+            'description' => $input['description'],
+            'price' => $input['price'],
+            'duration_hours' => $input['duration_hours'] ?? 8,
+            'start_date' => $input['start_date'] ?? date('Y-m-d'),
+            'schedule' => $input['schedule'] ?? '9h-17h',
+            'is_active' => $input['is_active'] ?? true
+        ]
+    ];
+    echo json_encode($response);
+} elseif (strpos($path, '/api/admin/categories') !== false && $method === 'POST') {
+    // Endpoint pour créer une catégorie (admin)
+    $input = json_decode(file_get_contents('php://input'), true);
+    $response = [
+        'success' => true,
+        'message' => 'Catégorie créée avec succès',
+        'category' => [
+            'id' => rand(100, 999),
+            'name' => $input['name'],
+            'slug' => strtolower(str_replace(' ', '-', $input['name'])),
+            'description' => $input['description'] ?? ''
+        ]
+    ];
+    echo json_encode($response);
+} elseif (strpos($path, '/api/admin/blog-posts') !== false && $method === 'POST') {
+    // Endpoint pour créer un article de blog (admin)
+    $input = json_decode(file_get_contents('php://input'), true);
+    $response = [
+        'success' => true,
+        'message' => 'Article créé avec succès',
+        'post' => [
+            'id' => rand(100, 999),
+            'title' => $input['title'],
+            'excerpt' => $input['excerpt'],
+            'content' => $input['content'],
+            'author' => $input['author'] ?? 'Admin',
+            'published' => $input['published'] ?? false,
+            'image' => $input['image'] ?? '/assets/images/hero-banner.jpg',
+            'blog_category_id' => $input['blog_category_id'],
+            'created_at' => date('Y-m-d H:i:s')
+        ]
+    ];
+    echo json_encode($response);
+} elseif (strpos($path, '/api/admin/blog-categories') !== false && $method === 'POST') {
+    // Endpoint pour créer une catégorie de blog (admin)
+    $input = json_decode(file_get_contents('php://input'), true);
+    $response = [
+        'success' => true,
+        'message' => 'Catégorie de blog créée avec succès',
+        'category' => [
+            'id' => rand(100, 999),
+            'name' => $input['name'],
+            'slug' => strtolower(str_replace(' ', '-', $input['name'])),
+            'description' => $input['description'] ?? ''
+        ]
+    ];
+    echo json_encode($response);
 } else {
     http_response_code(404);
     echo json_encode(['error' => 'Endpoint not found']);

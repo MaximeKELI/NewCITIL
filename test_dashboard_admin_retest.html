@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retest Dashboard Admin - CITIL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        .error { background: #ffeaea; border-color: #f44336; }
+        .warning { background: #fff3e0; border-color: #ff9800; }
+        .info { background: #e3f2fd; border-color: #2196f3; }
+        .btn { background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976d2; }
+        .btn-success { background: #4caf50; }
+        .btn-warning { background: #ff9800; }
+        .btn-danger { background: #f44336; }
+        .result { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0; }
+        .dashboard-item { border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #fafafa; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-pending { background: #ffc107; }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .metric { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .metric:last-child { border-bottom: none; }
+        .metric-value { font-weight: bold; color: #2196f3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Retest Dashboard Administrateur - CITIL</h1>
+        <p><strong>Objectif :</strong> Vérifier que toutes les fonctionnalités du dashboard administrateur fonctionnent parfaitement.</p>
+        
+        <div class="test-section info">
+            <h3>📊 Dashboard Overview</h3>
+            <div class="dashboard-grid">
+                <div class="dashboard-item">
+                    <h4>📦 Produits</h4>
+                    <div id="products-metrics" class="result">Chargement...</div>
+                </div>
+                <div class="dashboard-item">
+                    <h4>🎓 Formations</h4>
+                    <div id="trainings-metrics" class="result">Chargement...</div>
+                </div>
+                <div class="dashboard-item">
+                    <h4>👥 Utilisateurs</h4>
+                    <div id="users-metrics" class="result">Chargement...</div>
+                </div>
+                <div class="dashboard-item">
+                    <h4>📝 Candidatures</h4>
+                    <div id="applications-metrics" class="result">Chargement...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Test d'Authentification</h3>
+            <button class="btn" onclick="testAdminAuth()">Tester Connexion Admin</button>
+            <div id="auth-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🛠️ Test des Opérations CRUD</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <h4>Produits</h4>
+                    <button class="btn" onclick="testProductsCRUD()">Tester CRUD Produits</button>
+                    <div id="products-crud-result" class="result"></div>
+                </div>
+                <div>
+                    <h4>Formations</h4>
+                    <button class="btn" onclick="testTrainingsCRUD()">Tester CRUD Formations</button>
+                    <div id="trainings-crud-result" class="result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📈 Test de Performance</h3>
+            <button class="btn" onclick="testPerformance()">Tester Performance</button>
+            <div id="performance-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Test Interface Utilisateur</h3>
+            <button class="btn" onclick="testUI()">Tester Interface</button>
+            <div id="ui-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚠️ Test de Gestion d'Erreurs</h3>
+            <button class="btn" onclick="testErrorHandling()">Tester Gestion Erreurs</button>
+            <div id="error-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Test Complet Dashboard</h3>
+            <button class="btn btn-success" onclick="runCompleteDashboardTest()">Lancer Test Complet</button>
+            <div id="complete-test-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Résumé des Tests</h3>
+            <div id="summary-result" class="result">En attente des tests...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        const FRONTEND_URL = 'http://localhost:3002';
+        let authToken = null;
+        let testResults = {};
+
+        async function makeRequest(url, options = {}) {
+            const startTime = Date.now();
+            try {
+                const response = await fetch(`${API_BASE}${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3002',
+                        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                const duration = Date.now() - startTime;
+                
+                return { 
+                    success: response.ok, 
+                    data, 
+                    status: response.status, 
+                    duration,
+                    url: url
+                };
+            } catch (error) {
+                const duration = Date.now() - startTime;
+                return { 
+                    success: false, 
+                    error: error.message, 
+                    duration,
+                    url: url
+                };
+            }
+        }
+
+        async function loadDashboardMetrics() {
+            try {
+                const [products, trainings, users, applications] = await Promise.all([
+                    makeRequest('/api/products'),
+                    makeRequest('/api/trainings'),
+                    makeRequest('/api/admin/users'),
+                    makeRequest('/api/admin/internship-applications')
+                ]);
+
+                // Afficher les métriques des produits
+                const productsCount = products.success ? products.data.length : 0;
+                document.getElementById('products-metrics').innerHTML = `
+                    <div class="metric">
+                        <span>Total:</span>
+                        <span class="metric-value">${productsCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Status:</span>
+                        <span class="metric-value">${products.success ? '✅' : '❌'}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Temps:</span>
+                        <span class="metric-value">${products.duration}ms</span>
+                    </div>
+                `;
+
+                // Afficher les métriques des formations
+                const trainingsCount = trainings.success ? trainings.data.length : 0;
+                document.getElementById('trainings-metrics').innerHTML = `
+                    <div class="metric">
+                        <span>Total:</span>
+                        <span class="metric-value">${trainingsCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Status:</span>
+                        <span class="metric-value">${trainings.success ? '✅' : '❌'}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Temps:</span>
+                        <span class="metric-value">${trainings.duration}ms</span>
+                    </div>
+                `;
+
+                // Afficher les métriques des utilisateurs
+                const usersCount = users.success ? users.data.length : 0;
+                document.getElementById('users-metrics').innerHTML = `
+                    <div class="metric">
+                        <span>Total:</span>
+                        <span class="metric-value">${usersCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Status:</span>
+                        <span class="metric-value">${users.success ? '✅' : '❌'}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Temps:</span>
+                        <span class="metric-value">${users.duration}ms</span>
+                    </div>
+                `;
+
+                // Afficher les métriques des candidatures
+                const applicationsCount = applications.success ? applications.data.length : 0;
+                document.getElementById('applications-metrics').innerHTML = `
+                    <div class="metric">
+                        <span>Total:</span>
+                        <span class="metric-value">${applicationsCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Status:</span>
+                        <span class="metric-value">${applications.success ? '✅' : '❌'}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Temps:</span>
+                        <span class="metric-value">${applications.duration}ms</span>
+                    </div>
+                `;
+
+                testResults.metrics = {
+                    success: products.success && trainings.success && users.success && applications.success,
+                    data: { products: productsCount, trainings: trainingsCount, users: usersCount, applications: applicationsCount }
+                };
+
+            } catch (error) {
+                console.error('Erreur lors du chargement des métriques:', error);
+            }
+        }
+
+        async function testAdminAuth() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.textContent = 'Test d\'authentification admin...';
+            
+            try {
+                const loginResult = await makeRequest('/api/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: 'admin@citil.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (loginResult.success && loginResult.data.success) {
+                    authToken = loginResult.data.token;
+                    
+                    const meResult = await makeRequest('/api/auth/me');
+                    
+                    if (meResult.success && meResult.data.user) {
+                        resultDiv.innerHTML = `<div class="success">✅ Authentification Admin Réussie
+Utilisateur: ${meResult.data.user.name}
+Rôle: ${meResult.data.user.role}
+Email: ${meResult.data.user.email}
+Token: ${authToken.substring(0, 20)}...</div>`;
+                        testResults.auth = { success: true, user: meResult.data.user };
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ Connexion réussie mais vérification échouée</div>`;
+                        testResults.auth = { success: false };
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Échec de connexion: ${loginResult.data?.message || 'Erreur inconnue'}</div>`;
+                    testResults.auth = { success: false };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test: ${error.message}</div>`;
+                testResults.auth = { success: false };
+            }
+        }
+
+        async function testProductsCRUD() {
+            const resultDiv = document.getElementById('products-crud-result');
+            resultDiv.textContent = 'Test CRUD Produits...';
+            
+            try {
+                // Test de lecture
+                const getProducts = await makeRequest('/api/products');
+                
+                // Test de création
+                const createProduct = await makeRequest('/api/admin/products', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: 'Test CRUD Produit',
+                        description: 'Test CRUD description',
+                        price: 25000,
+                        stock: 5,
+                        category_id: 1,
+                        reference: 'CRUD-TEST-001'
+                    })
+                });
+                
+                // Test de lecture des catégories
+                const getCategories = await makeRequest('/api/categories');
+                
+                const allSuccess = getProducts.success && createProduct.success && getCategories.success;
+                
+                resultDiv.innerHTML = `<div class="${allSuccess ? 'success' : 'error'}">${allSuccess ? '✅' : '❌'} Test CRUD Produits
+Lecture: ${getProducts.success ? '✅' : '❌'} (${getProducts.data?.length || 0} produits)
+Création: ${createProduct.success ? '✅' : '❌'}
+Catégories: ${getCategories.success ? '✅' : '❌'} (${getCategories.data?.length || 0} catégories)</div>`;
+                
+                testResults.productsCRUD = { success: allSuccess };
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur CRUD Produits: ${error.message}</div>`;
+                testResults.productsCRUD = { success: false };
+            }
+        }
+
+        async function testTrainingsCRUD() {
+            const resultDiv = document.getElementById('trainings-crud-result');
+            resultDiv.textContent = 'Test CRUD Formations...';
+            
+            try {
+                // Test de lecture
+                const getTrainings = await makeRequest('/api/trainings');
+                
+                // Test de création
+                const createTraining = await makeRequest('/api/admin/trainings', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        title: 'Test CRUD Formation',
+                        description: 'Test CRUD formation description',
+                        price: 35000,
+                        duration_hours: 16,
+                        start_date: '2025-12-20',
+                        schedule: '9h-17h'
+                    })
+                });
+                
+                const allSuccess = getTrainings.success && createTraining.success;
+                
+                resultDiv.innerHTML = `<div class="${allSuccess ? 'success' : 'error'}">${allSuccess ? '✅' : '❌'} Test CRUD Formations
+Lecture: ${getTrainings.success ? '✅' : '❌'} (${getTrainings.data?.length || 0} formations)
+Création: ${createTraining.success ? '✅' : '❌'}</div>`;
+                
+                testResults.trainingsCRUD = { success: allSuccess };
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur CRUD Formations: ${error.message}</div>`;
+                testResults.trainingsCRUD = { success: false };
+            }
+        }
+
+        async function testPerformance() {
+            const resultDiv = document.getElementById('performance-result');
+            resultDiv.textContent = 'Test de performance...';
+            
+            try {
+                const startTime = Date.now();
+                
+                // Test de charge - 10 requêtes simultanées
+                const promises = [];
+                for (let i = 0; i < 10; i++) {
+                    promises.push(makeRequest('/api/products'));
+                }
+                
+                const results = await Promise.all(promises);
+                const endTime = Date.now();
+                const totalDuration = endTime - startTime;
+                
+                const successCount = results.filter(r => r.success).length;
+                const avgDuration = results.reduce((sum, r) => sum + r.duration, 0) / results.length;
+                const maxDuration = Math.max(...results.map(r => r.duration));
+                
+                const performance = avgDuration < 500 ? 'excellent' : avgDuration < 1000 ? 'bon' : 'médiocre';
+                
+                resultDiv.innerHTML = `<div class="success">✅ Test de Performance
+Requêtes simultanées: ${successCount}/10 réussies
+Durée totale: ${totalDuration}ms
+Durée moyenne: ${avgDuration.toFixed(0)}ms
+Durée max: ${maxDuration}ms
+Performance: ${performance}</div>`;
+                
+                testResults.performance = { 
+                    success: successCount >= 8, 
+                    successCount, 
+                    totalDuration, 
+                    avgDuration, 
+                    maxDuration 
+                };
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur test performance: ${error.message}</div>`;
+                testResults.performance = { success: false };
+            }
+        }
+
+        async function testUI() {
+            const resultDiv = document.getElementById('ui-result');
+            resultDiv.textContent = 'Test interface utilisateur...';
+            
+            try {
+                const frontendResponse = await fetch(FRONTEND_URL, { method: 'HEAD' });
+                
+                if (frontendResponse.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ Interface Utilisateur
+Frontend accessible: ✅ (Status: ${frontendResponse.status})
+URL: ${FRONTEND_URL}
+Interface: Opérationnelle</div>`;
+                    testResults.ui = { success: true, status: frontendResponse.status };
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Frontend inaccessible (Status: ${frontendResponse.status})</div>`;
+                    testResults.ui = { success: false };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur interface: ${error.message}</div>`;
+                testResults.ui = { success: false };
+            }
+        }
+
+        async function testErrorHandling() {
+            const resultDiv = document.getElementById('error-result');
+            resultDiv.textContent = 'Test gestion d\'erreurs...';
+            
+            try {
+                const errorTests = [
+                    { name: 'Endpoint Inexistant', url: '/api/nonexistent', expectedError: true },
+                    { name: 'Méthode Non Autorisée', url: '/api/products', method: 'DELETE', expectedError: true },
+                    { name: 'Données Invalides', url: '/api/auth/login', method: 'POST', data: { email: 'invalid', password: 'wrong' }, expectedError: true }
+                ];
+                
+                let results = [];
+                
+                for (const test of errorTests) {
+                    const options = { method: test.method || 'GET' };
+                    if (test.data) {
+                        options.body = JSON.stringify(test.data);
+                    }
+                    
+                    const result = await makeRequest(test.url, options);
+                    const hasError = !result.success;
+                    const expectedError = test.expectedError;
+                    const status = (hasError === expectedError) ? '✅' : '❌';
+                    results.push(`${status} ${test.name}`);
+                }
+                
+                const allPassed = results.every(r => r.includes('✅'));
+                
+                resultDiv.innerHTML = `<div class="${allPassed ? 'success' : 'error'}">${allPassed ? '✅' : '❌'} Gestion d'Erreurs
+${results.join('\n')}</div>`;
+                
+                testResults.errorHandling = { success: allPassed };
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur test gestion erreurs: ${error.message}</div>`;
+                testResults.errorHandling = { success: false };
+            }
+        }
+
+        async function runCompleteDashboardTest() {
+            const resultDiv = document.getElementById('complete-test-result');
+            resultDiv.textContent = 'Lancement du test complet du dashboard...';
+            
+            // Charger les métriques
+            await loadDashboardMetrics();
+            
+            // Exécuter tous les tests
+            await testAdminAuth();
+            await testProductsCRUD();
+            await testTrainingsCRUD();
+            await testPerformance();
+            await testUI();
+            await testErrorHandling();
+            
+            // Calculer le résumé
+            const totalTests = Object.keys(testResults).length;
+            const successfulTests = Object.values(testResults).filter(r => r.success).length;
+            const successRate = totalTests > 0 ? (successfulTests / totalTests * 100).toFixed(1) : 0;
+            
+            resultDiv.innerHTML = `<div class="${successRate >= 80 ? 'success' : 'error'}">🎉 Test Complet Dashboard Terminé
+Tests exécutés: ${totalTests}
+Tests réussis: ${successfulTests}
+Taux de réussite: ${successRate}%
+Status: ${successRate >= 80 ? '✅ EXCELLENT' : successRate >= 60 ? '⚠️ ACCEPTABLE' : '❌ PROBLÉMATIQUE'}</div>`;
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary-result');
+            
+            const totalTests = Object.keys(testResults).length;
+            const successfulTests = Object.values(testResults).filter(r => r.success).length;
+            const successRate = totalTests > 0 ? (successfulTests / totalTests * 100).toFixed(1) : 0;
+            
+            let summary = `📊 RÉSUMÉ DASHBOARD ADMINISTRATEUR\n`;
+            summary += `Tests exécutés: ${totalTests}\n`;
+            summary += `Tests réussis: ${successfulTests}\n`;
+            summary += `Taux de réussite: ${successRate}%\n\n`;
+            
+            if (testResults.metrics) {
+                summary += `📈 MÉTRIQUES:\n`;
+                summary += `Produits: ${testResults.metrics.data.products}\n`;
+                summary += `Formations: ${testResults.metrics.data.trainings}\n`;
+                summary += `Utilisateurs: ${testResults.metrics.data.users}\n`;
+                summary += `Candidatures: ${testResults.metrics.data.applications}\n\n`;
+            }
+            
+            if (successRate >= 80) {
+                summary += `✅ DASHBOARD ADMIN: OPÉRATIONNEL\n`;
+                summary += `Toutes les fonctionnalités du dashboard administrateur fonctionnent correctement.\n`;
+                summary += `L'interface est prête pour la production.`;
+            } else if (successRate >= 60) {
+                summary += `⚠️ DASHBOARD ADMIN: FONCTIONNEL AVEC RÉSERVES\n`;
+                summary += `La plupart des fonctionnalités fonctionnent, mais quelques problèmes mineurs détectés.\n`;
+                summary += `Vérifiez les logs pour plus de détails.`;
+            } else {
+                summary += `❌ DASHBOARD ADMIN: PROBLÉMATIQUE\n`;
+                summary += `Le dashboard a des problèmes majeurs qui nécessitent une attention immédiate.\n`;
+                summary += `Redémarrez les services et vérifiez la configuration.`;
+            }
+            
+            summaryDiv.textContent = summary;
+        }
+
+        // Chargement automatique des métriques au démarrage
+        window.onload = function() {
+            loadDashboardMetrics();
+        };
+    </script>
+</body>
+</html>

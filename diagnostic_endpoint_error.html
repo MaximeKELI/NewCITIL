@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Endpoint Not Found - CITIL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        .error { background: #ffeaea; border-color: #f44336; }
+        .warning { background: #fff3e0; border-color: #ff9800; }
+        .info { background: #e3f2fd; border-color: #2196f3; }
+        .btn { background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976d2; }
+        .result { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        .endpoint-test { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .endpoint-item { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic "Endpoint Not Found" - CITIL</h1>
+        <p>Test complet pour identifier la source du problème "endpoint not found".</p>
+        
+        <div class="test-section info">
+            <h3>📋 Services Actifs</h3>
+            <div id="services-status" class="result">Vérification en cours...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Test de Connectivité</h3>
+            <button class="btn" onclick="testConnectivity()">Tester Connectivité</button>
+            <div id="connectivity-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Test des Endpoints API</h3>
+            <button class="btn" onclick="testAllEndpoints()">Tester Tous les Endpoints</button>
+            <div id="endpoints-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Test Frontend → Backend</h3>
+            <button class="btn" onclick="testFrontendBackend()">Tester Communication</button>
+            <div id="frontend-backend-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚠️ Test des Erreurs Spécifiques</h3>
+            <button class="btn" onclick="testSpecificErrors()">Tester Erreurs</button>
+            <div id="errors-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Test de Configuration</h3>
+            <button class="btn" onclick="testConfiguration()">Tester Configuration</button>
+            <div id="config-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Résumé du Diagnostic</h3>
+            <div id="diagnostic-summary" class="result">En attente des tests...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        const FRONTEND_URL = 'http://localhost:3002';
+        let diagnosticResults = {};
+
+        async function makeRequest(url, options = {}) {
+            const startTime = Date.now();
+            try {
+                const response = await fetch(`${API_BASE}${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3002',
+                        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                const duration = Date.now() - startTime;
+                
+                return { 
+                    success: response.ok, 
+                    data, 
+                    status: response.status, 
+                    duration,
+                    url: url
+                };
+            } catch (error) {
+                const duration = Date.now() - startTime;
+                return { 
+                    success: false, 
+                    error: error.message, 
+                    duration,
+                    url: url
+                };
+            }
+        }
+
+        async function testConnectivity() {
+            const resultDiv = document.getElementById('connectivity-result');
+            resultDiv.textContent = 'Test de connectivité en cours...';
+            
+            const tests = [
+                { name: 'API Base', url: '/' },
+                { name: 'API Root', url: '/api/' },
+                { name: 'API Products', url: '/api/products' },
+                { name: 'API Trainings', url: '/api/trainings' },
+                { name: 'API Categories', url: '/api/categories' }
+            ];
+            
+            let results = [];
+            
+            for (const test of tests) {
+                const result = await makeRequest(test.url);
+                const status = result.success ? '✅' : '❌';
+                const info = result.success ? 
+                    `Status: ${result.status} (${result.duration}ms)` : 
+                    `Erreur: ${result.error}`;
+                results.push(`${status} ${test.name}: ${info}`);
+            }
+            
+            resultDiv.textContent = results.join('\n');
+            diagnosticResults.connectivity = { success: results.every(r => r.includes('✅')), results };
+        }
+
+        async function testAllEndpoints() {
+            const resultDiv = document.getElementById('endpoints-result');
+            resultDiv.textContent = 'Test des endpoints en cours...';
+            
+            const endpoints = [
+                { name: 'Products', url: '/api/products', method: 'GET' },
+                { name: 'Trainings', url: '/api/trainings', method: 'GET' },
+                { name: 'Categories', url: '/api/categories', method: 'GET' },
+                { name: 'Auth Login', url: '/api/auth/login', method: 'POST', data: { email: 'admin@citil.com', password: 'admin123' } },
+                { name: 'Auth Me', url: '/api/auth/me', method: 'GET' },
+                { name: 'Admin Users', url: '/api/admin/users', method: 'GET' },
+                { name: 'Admin Applications', url: '/api/admin/internship-applications', method: 'GET' },
+                { name: 'Create Product', url: '/api/admin/products', method: 'POST', data: { name: 'Test', description: 'Test', price: 1000, stock: 1, category_id: 1, reference: 'TEST' } },
+                { name: 'Create Training', url: '/api/admin/trainings', method: 'POST', data: { title: 'Test', description: 'Test', price: 2000, duration_hours: 8, start_date: '2025-12-01', schedule: '9h-17h' } },
+                { name: 'Create Category', url: '/api/admin/categories', method: 'POST', data: { name: 'Test Category', description: 'Test Description' } }
+            ];
+            
+            let results = [];
+            
+            for (const endpoint of endpoints) {
+                const options = { method: endpoint.method };
+                if (endpoint.data) {
+                    options.body = JSON.stringify(endpoint.data);
+                }
+                
+                const result = await makeRequest(endpoint.url, options);
+                const status = result.success ? '✅' : '❌';
+                const info = result.success ? 
+                    `Status: ${result.status} (${result.duration}ms)` : 
+                    `Erreur: ${result.error || result.data?.error || 'Unknown'}`;
+                results.push(`${status} ${endpoint.name}: ${info}`);
+            }
+            
+            resultDiv.textContent = results.join('\n');
+            diagnosticResults.endpoints = { success: results.every(r => r.includes('✅')), results };
+        }
+
+        async function testFrontendBackend() {
+            const resultDiv = document.getElementById('frontend-backend-result');
+            resultDiv.textContent = 'Test Frontend → Backend en cours...';
+            
+            // Test d'accès au frontend
+            let frontendAccess = false;
+            try {
+                const frontendResponse = await fetch(FRONTEND_URL, { method: 'HEAD' });
+                frontendAccess = frontendResponse.ok;
+            } catch (error) {
+                frontendAccess = false;
+            }
+            
+            // Test de communication API depuis le frontend
+            const apiTests = [
+                { name: 'Products API', url: '/api/products' },
+                { name: 'Trainings API', url: '/api/trainings' },
+                { name: 'Categories API', url: '/api/categories' }
+            ];
+            
+            let results = [`Frontend Access: ${frontendAccess ? '✅' : '❌'}`];
+            
+            for (const test of apiTests) {
+                const result = await makeRequest(test.url);
+                const status = result.success ? '✅' : '❌';
+                const info = result.success ? 
+                    `Status: ${result.status} (${result.duration}ms)` : 
+                    `Erreur: ${result.error || result.data?.error || 'Unknown'}`;
+                results.push(`${status} ${test.name}: ${info}`);
+            }
+            
+            resultDiv.textContent = results.join('\n');
+            diagnosticResults.frontendBackend = { success: frontendAccess && results.slice(1).every(r => r.includes('✅')), results };
+        }
+
+        async function testSpecificErrors() {
+            const resultDiv = document.getElementById('errors-result');
+            resultDiv.textContent = 'Test des erreurs spécifiques en cours...';
+            
+            const errorTests = [
+                { name: 'Endpoint Inexistant', url: '/api/nonexistent', expectedError: true },
+                { name: 'Méthode Non Autorisée', url: '/api/products', method: 'DELETE', expectedError: true },
+                { name: 'Données Invalides', url: '/api/auth/login', method: 'POST', data: { email: 'invalid', password: 'wrong' }, expectedError: true },
+                { name: 'Endpoint Valide', url: '/api/products', expectedError: false }
+            ];
+            
+            let results = [];
+            
+            for (const test of errorTests) {
+                const options = { method: test.method || 'GET' };
+                if (test.data) {
+                    options.body = JSON.stringify(test.data);
+                }
+                
+                const result = await makeRequest(test.url, options);
+                const hasError = !result.success;
+                const expectedError = test.expectedError;
+                const status = (hasError === expectedError) ? '✅' : '❌';
+                const info = hasError ? 
+                    `Erreur: ${result.error || result.data?.error || 'Unknown'}` : 
+                    `Succès: ${result.status}`;
+                results.push(`${status} ${test.name}: ${info}`);
+            }
+            
+            resultDiv.textContent = results.join('\n');
+            diagnosticResults.errors = { success: results.every(r => r.includes('✅')), results };
+        }
+
+        async function testConfiguration() {
+            const resultDiv = document.getElementById('config-result');
+            resultDiv.textContent = 'Test de configuration en cours...';
+            
+            const configTests = [
+                { name: 'CORS Headers', test: async () => {
+                    const response = await fetch(`${API_BASE}/api/products`, { method: 'OPTIONS' });
+                    return response.headers.get('Access-Control-Allow-Origin') !== null;
+                }},
+                { name: 'Content-Type JSON', test: async () => {
+                    const result = await makeRequest('/api/products');
+                    return result.success && result.data && Array.isArray(result.data);
+                }},
+                { name: 'Response Time', test: async () => {
+                    const result = await makeRequest('/api/products');
+                    return result.success && result.duration < 1000;
+                }},
+                { name: 'Error Handling', test: async () => {
+                    const result = await makeRequest('/api/nonexistent');
+                    return !result.success && result.data && result.data.error;
+                }}
+            ];
+            
+            let results = [];
+            
+            for (const test of configTests) {
+                try {
+                    const success = await test.test();
+                    results.push(`${success ? '✅' : '❌'} ${test.name}`);
+                } catch (error) {
+                    results.push(`❌ ${test.name}: ${error.message}`);
+                }
+            }
+            
+            resultDiv.textContent = results.join('\n');
+            diagnosticResults.config = { success: results.every(r => r.includes('✅')), results };
+        }
+
+        function updateDiagnosticSummary() {
+            const summaryDiv = document.getElementById('diagnostic-summary');
+            
+            const totalTests = Object.keys(diagnosticResults).length;
+            const successfulTests = Object.values(diagnosticResults).filter(r => r.success).length;
+            const successRate = totalTests > 0 ? (successfulTests / totalTests * 100).toFixed(1) : 0;
+            
+            let summary = `📊 RÉSUMÉ DU DIAGNOSTIC\n`;
+            summary += `Tests exécutés: ${totalTests}\n`;
+            summary += `Tests réussis: ${successfulTests}\n`;
+            summary += `Taux de réussite: ${successRate}%\n\n`;
+            
+            if (successRate >= 80) {
+                summary += `✅ DIAGNOSTIC: Système fonctionnel\n`;
+                summary += `Le problème "endpoint not found" semble être résolu.\n`;
+                summary += `Tous les services communiquent correctement.`;
+            } else if (successRate >= 60) {
+                summary += `⚠️ DIAGNOSTIC: Problèmes mineurs détectés\n`;
+                summary += `Certains endpoints peuvent avoir des problèmes.\n`;
+                summary += `Vérifiez les logs pour plus de détails.`;
+            } else {
+                summary += `❌ DIAGNOSTIC: Problèmes majeurs détectés\n`;
+                summary += `Le système a des problèmes de communication.\n`;
+                summary += `Redémarrez les services et vérifiez la configuration.`;
+            }
+            
+            summaryDiv.textContent = summary;
+        }
+
+        // Test automatique au chargement
+        window.onload = async function() {
+            await testConnectivity();
+            await testAllEndpoints();
+            await testFrontendBackend();
+            await testSpecificErrors();
+            await testConfiguration();
+            updateDiagnosticSummary();
+        };
+    </script>
+</body>
+</html>

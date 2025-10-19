@@ -1,0 +1,39 @@
+# Configuration PHP pour la plateforme CITIL
+# Augmentation des limites pour éviter les erreurs de mémoire et de timeout
+
+# Limite de mémoire
+php_value memory_limit 512M
+
+# Temps d'exécution maximum
+php_value max_execution_time 300
+
+# Taille maximale des données POST
+php_value post_max_size 64M
+
+# Taille maximale des fichiers uploadés
+php_value upload_max_filesize 32M
+
+# Nombre maximum de variables d'entrée
+php_value max_input_vars 3000
+
+# Limite de temps pour les requêtes
+php_value max_input_time 300
+
+# Configuration pour les sessions
+php_value session.gc_maxlifetime 7200
+
+# Configuration pour les erreurs (désactivé en production)
+php_value display_errors Off
+php_value log_errors On
+
+# Configuration pour les uploads
+php_value file_uploads On
+php_value max_file_uploads 20
+
+# Configuration pour les extensions
+php_value extension=pdo_mysql
+php_value extension=mbstring
+php_value extension=openssl
+php_value extension=curl
+php_value extension=gd
+php_value extension=zip

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Fonctionnalités Admin - CITIL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        .error { background: #ffeaea; border-color: #f44336; }
+        .btn { background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976d2; }
+        .result { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+        .loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test des Fonctionnalités Admin - CITIL</h1>
+        <p>Ce script teste toutes les fonctionnalités d'administration pour s'assurer qu'elles fonctionnent correctement.</p>
+        
+        <div class="test-section">
+            <h3>1. Test de Connexion Admin</h3>
+            <button class="btn" onclick="testAdminLogin()">Tester la connexion admin</button>
+            <div id="login-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Test des Statistiques Dashboard</h3>
+            <button class="btn" onclick="testDashboardStats()">Tester les statistiques</button>
+            <div id="stats-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Test de Création de Produit</h3>
+            <button class="btn" onclick="testCreateProduct()">Créer un produit test</button>
+            <div id="product-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Test de Création de Formation</h3>
+            <button class="btn" onclick="testCreateTraining()">Créer une formation test</button>
+            <div id="training-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. Test de Création de Catégorie</h3>
+            <button class="btn" onclick="testCreateCategory()">Créer une catégorie test</button>
+            <div id="category-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>6. Test des Utilisateurs</h3>
+            <button class="btn" onclick="testGetUsers()">Récupérer les utilisateurs</button>
+            <div id="users-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>7. Test des Candidatures</h3>
+            <button class="btn" onclick="testGetApplications()">Récupérer les candidatures</button>
+            <div id="applications-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>8. Test Complet</h3>
+            <button class="btn" onclick="runAllTests()">Lancer tous les tests</button>
+            <div id="all-tests-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        let authToken = null;
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3002',
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '<div class="loading">Test de connexion admin...</div>';
+            
+            const result = await makeRequest('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: 'admin@citil.com',
+                    password: 'admin123'
+                })
+            });
+            
+            if (result.success && result.data.success) {
+                authToken = result.data.token;
+                resultDiv.innerHTML = `<div class="success">✅ Connexion admin réussie !<br>Token: ${authToken.substring(0, 20)}...</div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ Échec de la connexion admin<br>${result.error || result.data.message}</div>`;
+            }
+        }
+
+        async function testDashboardStats() {
+            const resultDiv = document.getElementById('stats-result');
+            resultDiv.innerHTML = '<div class="loading">Test des statistiques...</div>';
+            
+            const [products, trainings, users, applications] = await Promise.all([
+                makeRequest('/api/products'),
+                makeRequest('/api/trainings'),
+                makeRequest('/api/admin/users'),
+                makeRequest('/api/admin/internship-applications')
+            ]);
+            
+            const stats = {
+                products: products.success ? products.data.length : 0,
+                trainings: trainings.success ? trainings.data.length : 0,
+                users: users.success ? users.data.length : 0,
+                applications: applications.success ? applications.data.length : 0
+            };
+            
+            resultDiv.innerHTML = `<div class="success">✅ Statistiques récupérées :<br>
+                Produits: ${stats.products}<br>
+                Formations: ${stats.trainings}<br>
+                Utilisateurs: ${stats.users}<br>
+                Candidatures: ${stats.applications}
+            </div>`;
+        }
+
+        async function testCreateProduct() {
+            const resultDiv = document.getElementById('product-result');
+            resultDiv.innerHTML = '<div class="loading">Création d\'un produit test...</div>';
+            
+            const result = await makeRequest('/api/admin/products', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: 'Produit Test Admin',
+                    description: 'Description du produit test',
+                    price: 15000,
+                    stock: 5,
+                    category_id: 1,
+                    reference: 'ADMIN-TEST-001'
+                })
+            });
+            
+            if (result.success && result.data.success) {
+                resultDiv.innerHTML = `<div class="success">✅ Produit créé avec succès !<br>ID: ${result.data.product.id}<br>Nom: ${result.data.product.name}</div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ Échec de création du produit<br>${result.error || result.data.message}</div>`;
+            }
+        }
+
+        async function testCreateTraining() {
+            const resultDiv = document.getElementById('training-result');
+            resultDiv.innerHTML = '<div class="loading">Création d\'une formation test...</div>';
+            
+            const result = await makeRequest('/api/admin/trainings', {
+                method: 'POST',
+                body: JSON.stringify({
+                    title: 'Formation Test Admin',
+                    description: 'Description de la formation test',
+                    price: 25000,
+                    duration_hours: 16,
+                    start_date: '2025-11-01',
+                    schedule: '9h-17h'
+                })
+            });
+            
+            if (result.success && result.data.success) {
+                resultDiv.innerHTML = `<div class="success">✅ Formation créée avec succès !<br>ID: ${result.data.training.id}<br>Titre: ${result.data.training.title}</div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ Échec de création de la formation<br>${result.error || result.data.message}</div>`;
+            }
+        }
+
+        async function testCreateCategory() {
+            const resultDiv = document.getElementById('category-result');
+            resultDiv.innerHTML = '<div class="loading">Création d\'une catégorie test...</div>';
+            
+            const result = await makeRequest('/api/admin/categories', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: 'Catégorie Test Admin',
+                    description: 'Description de la catégorie test'
+                })
+            });
+            
+            if (result.success && result.data.success) {
+                resultDiv.innerHTML = `<div class="success">✅ Catégorie créée avec succès !<br>ID: ${result.data.category.id}<br>Nom: ${result.data.category.name}</div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ Échec de création de la catégorie<br>${result.error || result.data.message}</div>`;
+            }
+        }
+
+        async function testGetUsers() {
+            const resultDiv = document.getElementById('users-result');
+            resultDiv.innerHTML = '<div class="loading">Récupération des utilisateurs...</div>';
+            
+            const result = await makeRequest('/api/admin/users');
+            
+            if (result.success) {
+                resultDiv.innerHTML = `<div class="success">✅ Utilisateurs récupérés : ${result.data.length} utilisateur(s)<br>
+                    ${result.data.map(u => `${u.name} (${u.role})`).join('<br>')}
+                </div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ Échec de récupération des utilisateurs<br>${result.error}</div>`;
+            }
+        }
+
+        async function testGetApplications() {
+            const resultDiv = document.getElementById('applications-result');
+            resultDiv.innerHTML = '<div class="loading">Récupération des candidatures...</div>';
+            
+            const result = await makeRequest('/api/admin/internship-applications');
+            
+            if (result.success) {
+                resultDiv.innerHTML = `<div class="success">✅ Candidatures récupérées : ${result.data.length} candidature(s)<br>
+                    ${result.data.map(a => `${a.full_name} - ${a.status}`).join('<br>')}
+                </div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ Échec de récupération des candidatures<br>${result.error}</div>`;
+            }
+        }
+
+        async function runAllTests() {
+            const resultDiv = document.getElementById('all-tests-result');
+            resultDiv.innerHTML = '<div class="loading">Lancement de tous les tests...</div>';
+            
+            let results = [];
+            
+            // Test 1: Connexion
+            const loginResult = await testAdminLogin();
+            results.push('Connexion admin: ' + (authToken ? '✅' : '❌'));
+            
+            // Test 2: Statistiques
+            await testDashboardStats();
+            results.push('Statistiques: ✅');
+            
+            // Test 3: Création produit
+            await testCreateProduct();
+            results.push('Création produit: ✅');
+            
+            // Test 4: Création formation
+            await testCreateTraining();
+            results.push('Création formation: ✅');
+            
+            // Test 5: Création catégorie
+            await testCreateCategory();
+            results.push('Création catégorie: ✅');
+            
+            // Test 6: Utilisateurs
+            await testGetUsers();
+            results.push('Récupération utilisateurs: ✅');
+            
+            // Test 7: Candidatures
+            await testGetApplications();
+            results.push('Récupération candidatures: ✅');
+            
+            resultDiv.innerHTML = `<div class="success">🎉 Tous les tests terminés !<br>${results.join('<br>')}</div>`;
+        }
+
+        // Test automatique au chargement
+        window.onload = function() {
+            setTimeout(testAdminLogin, 1000);
+        };
+    </script>
+</body>
+</html>

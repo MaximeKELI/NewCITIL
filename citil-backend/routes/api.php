@@ -14,6 +14,12 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\InternshipApplicationController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\TestController;
+use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\Admin\TrainingController as AdminTrainingController;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\BlogPostController as AdminBlogPostController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\Admin\InternshipApplicationController as AdminInternshipApplicationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +42,10 @@ use App\Http\Controllers\Api\TestController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Authentification Admin (compatible avec le frontend)
+Route::post('/auth/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->get('/auth/me', [AuthController::class, 'userInfo']);
+
     // Protégées
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logOut']);
@@ -45,9 +55,9 @@ Route::post('/login', [AuthController::class, 'login']);
     });
 
 
-// Liste des produits (lecture seule pour la boutique)
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
+// Liste des produits (lecture seule pour la boutique) - Version stable
+Route::get('/products', [App\Http\Controllers\Api\SimpleProductController::class, 'index']);
+Route::get('/products/{id}', [App\Http\Controllers\Api\SimpleProductController::class, 'show']);
 
 // Catégories
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -73,6 +83,15 @@ Route::post('/internship-applications', [InternshipApplicationController::class,
 // Test API
 Route::get('/test', [TestController::class, 'test']);
 Route::get('/test-trainings', [TestController::class, 'trainings']);
+Route::get('/test-products', [App\Http\Controllers\Api\TestProductController::class, 'index']);
+Route::get('/test-products-with-category', [App\Http\Controllers\Api\TestProductController::class, 'withCategory']);
+
+// Routes admin pour les données (sans auth pour la démonstration)
+Route::get('/admin/categories', [AdminCategoryController::class, 'index']);
+Route::get('/admin/products', [AdminProductController::class, 'index']);
+Route::get('/admin/trainings', [AdminTrainingController::class, 'index']);
+Route::get('/admin/blog-posts', [AdminBlogPostController::class, 'index']);
+Route::get('/admin/users', [AdminUserController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -83,17 +102,17 @@ Route::get('/test-trainings', [TestController::class, 'trainings']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Gestion des produits
-    Route::apiResource('admin/products', ProductController::class);
+    // Gestion des produits (Admin)
+    Route::apiResource('admin/products', AdminProductController::class);
 
-    // Gestion des catégories
-    Route::apiResource('admin/categories', CategoryController::class);
+    // Gestion des catégories (Admin)
+    Route::apiResource('admin/categories', AdminCategoryController::class);
 
-    // Gestion des formations
-    Route::apiResource('admin/trainings', TrainingController::class);
+    // Gestion des formations (Admin)
+    Route::apiResource('admin/trainings', AdminTrainingController::class);
 
-    // Gestion des articles de blog
-    Route::apiResource('admin/blog-posts', BlogPostController::class);
+    // Gestion des articles de blog (Admin)
+    Route::apiResource('admin/blog-posts', AdminBlogPostController::class);
 
     // Gestion des projets
     Route::apiResource('admin/projects', ProjectController::class);
@@ -101,11 +120,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gestion des commandes
     Route::apiResource('admin/orders', OrderController::class);
 
-    // Liste des candidatures (admin seulement)
-    Route::get('/admin/internship-applications', [InternshipApplicationController::class, 'index']);
+    // Gestion des candidatures (Admin)
+    Route::apiResource('admin/internship-applications', AdminInternshipApplicationController::class);
     
-    // Gestion des utilisateurs (admin seulement)
-    Route::get('/admin/users', [UserController::class, 'index']);
+    // Gestion des utilisateurs (Admin)
+    Route::apiResource('admin/users', AdminUserController::class);
 });
 
 /*

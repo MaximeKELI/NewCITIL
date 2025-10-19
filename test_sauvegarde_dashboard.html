@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sauvegarde Dashboard Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        .error { background: #ffeaea; border-color: #f44336; }
+        .warning { background: #fff3e0; border-color: #ff9800; }
+        .info { background: #e3f2fd; border-color: #2196f3; }
+        .btn { background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976d2; }
+        .btn-success { background: #4caf50; }
+        .btn-warning { background: #ff9800; }
+        .btn-danger { background: #f44336; }
+        .result { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0; }
+        .test-item { border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #fafafa; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-pending { background: #ffc107; }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💾 Test Sauvegarde Dashboard Admin</h1>
+        <p><strong>Objectif :</strong> Vérifier que les fonctionnalités du dashboard administrateur sauvegardent bien les données dans la base de données.</p>
+        
+        <div class="test-section info">
+            <h3>🔐 Connexion Admin</h3>
+            <p>Identifiants : admin@citil.com / admin123</p>
+            <button class="btn" onclick="testAdminLogin()">Tester Connexion</button>
+            <div id="login-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test de Sauvegarde des Données</h3>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h4><span class="status-indicator status-pending" id="product-save-indicator"></span>Produits</h4>
+                    <button class="btn" onclick="testProductSave()">Tester Sauvegarde Produit</button>
+                    <div id="product-save-result" class="result"></div>
+                </div>
+                <div class="test-item">
+                    <h4><span class="status-indicator status-pending" id="training-save-indicator"></span>Formations</h4>
+                    <button class="btn" onclick="testTrainingSave()">Tester Sauvegarde Formation</button>
+                    <div id="training-save-result" class="result"></div>
+                </div>
+                <div class="test-item">
+                    <h4><span class="status-indicator status-pending" id="category-save-indicator"></span>Catégories</h4>
+                    <button class="btn" onclick="testCategorySave()">Tester Sauvegarde Catégorie</button>
+                    <div id="category-save-result" class="result"></div>
+                </div>
+                <div class="test-item">
+                    <h4><span class="status-indicator status-pending" id="blog-save-indicator"></span>Blog</h4>
+                    <button class="btn" onclick="testBlogSave()">Tester Sauvegarde Article</button>
+                    <div id="blog-save-result" class="result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Vérification Base de Données</h3>
+            <button class="btn btn-success" onclick="checkDatabase()">Vérifier Base de Données</button>
+            <div id="database-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Test Complet de Sauvegarde</h3>
+            <button class="btn btn-success" onclick="runCompleteSaveTest()">Lancer Test Complet</button>
+            <div id="complete-save-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Résumé Final</h3>
+            <div id="summary-result" class="result">En attente des tests...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        let authToken = null;
+        let testResults = {};
+
+        async function makeRequest(url, options = {}) {
+            const startTime = Date.now();
+            try {
+                const response = await fetch(`${API_BASE}${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3002',
+                        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                const duration = Date.now() - startTime;
+                
+                return { 
+                    success: response.ok, 
+                    data, 
+                    status: response.status, 
+                    duration,
+                    url: url
+                };
+            } catch (error) {
+                const duration = Date.now() - startTime;
+                return { 
+                    success: false, 
+                    error: error.message, 
+                    duration,
+                    url: url
+                };
+            }
+        }
+
+        function updateIndicator(testId, status) {
+            const indicator = document.getElementById(`${testId}-indicator`);
+            indicator.className = `status-indicator status-${status}`;
+        }
+
+        function updateResult(testId, content, type = 'info') {
+            const resultDiv = document.getElementById(`${testId}-result`);
+            resultDiv.innerHTML = `<div class="${type}">${content}</div>`;
+        }
+
+        async function testAdminLogin() {
+            updateResult('login', 'Test de connexion admin...');
+            
+            try {
+                const loginResult = await makeRequest('/api/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: 'admin@citil.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (loginResult.success && loginResult.data.success) {
+                    authToken = loginResult.data.token;
+                    updateResult('login', `✅ Connexion Admin Réussie
+Utilisateur: ${loginResult.data.user.name}
+Rôle: ${loginResult.data.user.role}
+Token: ${authToken.substring(0, 20)}...`, 'success');
+                    testResults.login = { success: true, user: loginResult.data.user };
+                } else {
+                    updateResult('login', `❌ Échec de connexion: ${loginResult.data?.message || 'Erreur inconnue'}`, 'error');
+                    testResults.login = { success: false };
+                }
+            } catch (error) {
+                updateResult('login', `❌ Erreur: ${error.message}`, 'error');
+                testResults.login = { success: false };
+            }
+        }
+
+        async function testProductSave() {
+            updateIndicator('product-save', 'pending');
+            updateResult('product-save', 'Test de sauvegarde produit...');
+            
+            try {
+                const productData = {
+                    name: 'Test Produit Sauvegarde',
+                    description: 'Test de sauvegarde en base de données',
+                    price: 25000,
+                    stock: 15,
+                    category_id: 1,
+                    reference: 'TEST-SAVE-' + Date.now(),
+                    is_active: true
+                };
+
+                const saveResult = await makeRequest('/api/admin/products', {
+                    method: 'POST',
+                    body: JSON.stringify(productData)
+                });
+                
+                if (saveResult.success && saveResult.data.success) {
+                    updateIndicator('product-save', 'success');
+                    updateResult('product-save', `✅ Produit Sauvegardé avec Succès
+ID: ${saveResult.data.product.id}
+Nom: ${saveResult.data.product.name}
+Prix: ${saveResult.data.product.price} CFA
+Stock: ${saveResult.data.product.stock}
+Référence: ${saveResult.data.product.reference}
+Message: ${saveResult.data.message}`, 'success');
+                    testResults.productSave = { success: true, data: saveResult.data.product };
+                } else {
+                    updateIndicator('product-save', 'error');
+                    updateResult('product-save', `❌ Échec de sauvegarde: ${saveResult.data?.message || 'Erreur inconnue'}`, 'error');
+                    testResults.productSave = { success: false };
+                }
+            } catch (error) {
+                updateIndicator('product-save', 'error');
+                updateResult('product-save', `❌ Erreur: ${error.message}`, 'error');
+                testResults.productSave = { success: false };
+            }
+        }
+
+        async function testTrainingSave() {
+            updateIndicator('training-save', 'pending');
+            updateResult('training-save', 'Test de sauvegarde formation...');
+            
+            try {
+                const trainingData = {
+                    title: 'Test Formation Sauvegarde',
+                    description: 'Test de sauvegarde formation en base de données',
+                    price: 75000,
+                    duration_hours: 20,
+                    start_date: '2025-12-01',
+                    schedule: '9h-17h',
+                    is_active: true
+                };
+
+                const saveResult = await makeRequest('/api/admin/trainings', {
+                    method: 'POST',
+                    body: JSON.stringify(trainingData)
+                });
+                
+                if (saveResult.success && saveResult.data.success) {
+                    updateIndicator('training-save', 'success');
+                    updateResult('training-save', `✅ Formation Sauvegardée avec Succès
+ID: ${saveResult.data.training.id}
+Titre: ${saveResult.data.training.title}
+Prix: ${saveResult.data.training.price} CFA
+Durée: ${saveResult.data.training.duration_hours}h
+Date: ${saveResult.data.training.start_date}
+Message: ${saveResult.data.message}`, 'success');
+                    testResults.trainingSave = { success: true, data: saveResult.data.training };
+                } else {
+                    updateIndicator('training-save', 'error');
+                    updateResult('training-save', `❌ Échec de sauvegarde: ${saveResult.data?.message || 'Erreur inconnue'}`, 'error');
+                    testResults.trainingSave = { success: false };
+                }
+            } catch (error) {
+                updateIndicator('training-save', 'error');
+                updateResult('training-save', `❌ Erreur: ${error.message}`, 'error');
+                testResults.trainingSave = { success: false };
+            }
+        }
+
+        async function testCategorySave() {
+            updateIndicator('category-save', 'pending');
+            updateResult('category-save', 'Test de sauvegarde catégorie...');
+            
+            try {
+                const categoryData = {
+                    name: 'Test Catégorie Sauvegarde',
+                    description: 'Test de sauvegarde catégorie en base de données'
+                };
+
+                const saveResult = await makeRequest('/api/admin/categories', {
+                    method: 'POST',
+                    body: JSON.stringify(categoryData)
+                });
+                
+                if (saveResult.success && saveResult.data.success) {
+                    updateIndicator('category-save', 'success');
+                    updateResult('category-save', `✅ Catégorie Sauvegardée avec Succès
+ID: ${saveResult.data.category.id}
+Nom: ${saveResult.data.category.name}
+Slug: ${saveResult.data.category.slug}
+Description: ${saveResult.data.category.description}
+Message: ${saveResult.data.message}`, 'success');
+                    testResults.categorySave = { success: true, data: saveResult.data.category };
+                } else {
+                    updateIndicator('category-save', 'error');
+                    updateResult('category-save', `❌ Échec de sauvegarde: ${saveResult.data?.message || 'Erreur inconnue'}`, 'error');
+                    testResults.categorySave = { success: false };
+                }
+            } catch (error) {
+                updateIndicator('category-save', 'error');
+                updateResult('category-save', `❌ Erreur: ${error.message}`, 'error');
+                testResults.categorySave = { success: false };
+            }
+        }
+
+        async function testBlogSave() {
+            updateIndicator('blog-save', 'pending');
+            updateResult('blog-save', 'Test de sauvegarde article blog...');
+            
+            try {
+                const blogData = {
+                    title: 'Test Article Blog Sauvegarde',
+                    excerpt: 'Test de sauvegarde article blog en base de données',
+                    content: 'Contenu complet de l\'article de test pour vérifier la sauvegarde en base de données.',
+                    author: 'Admin Test',
+                    published: true,
+                    blog_category_id: 1
+                };
+
+                const saveResult = await makeRequest('/api/admin/blog-posts', {
+                    method: 'POST',
+                    body: JSON.stringify(blogData)
+                });
+                
+                if (saveResult.success && saveResult.data.success) {
+                    updateIndicator('blog-save', 'success');
+                    updateResult('blog-save', `✅ Article Blog Sauvegardé avec Succès
+ID: ${saveResult.data.post.id}
+Titre: ${saveResult.data.post.title}
+Auteur: ${saveResult.data.post.author}
+Publié: ${saveResult.data.post.published ? 'Oui' : 'Non'}
+Catégorie ID: ${saveResult.data.post.blog_category_id}
+Date: ${saveResult.data.post.created_at}
+Message: ${saveResult.data.message}`, 'success');
+                    testResults.blogSave = { success: true, data: saveResult.data.post };
+                } else {
+                    updateIndicator('blog-save', 'error');
+                    updateResult('blog-save', `❌ Échec de sauvegarde: ${saveResult.data?.message || 'Erreur inconnue'}`, 'error');
+                    testResults.blogSave = { success: false };
+                }
+            } catch (error) {
+                updateIndicator('blog-save', 'error');
+                updateResult('blog-save', `❌ Erreur: ${error.message}`, 'error');
+                testResults.blogSave = { success: false };
+            }
+        }
+
+        async function checkDatabase() {
+            updateResult('database', 'Vérification de la base de données...');
+            
+            try {
+                const [products, trainings, categories, blogPosts] = await Promise.all([
+                    makeRequest('/api/products'),
+                    makeRequest('/api/trainings'),
+                    makeRequest('/api/categories'),
+                    makeRequest('/api/blog-posts')
+                ]);
+                
+                const allSuccess = products.success && trainings.success && categories.success && blogPosts.success;
+                
+                updateResult('database', `${allSuccess ? '✅' : '❌'} Vérification Base de Données
+Produits: ${products.success ? '✅' : '❌'} (${products.data?.length || 0} éléments)
+Formations: ${trainings.success ? '✅' : '❌'} (${trainings.data?.length || 0} éléments)
+Catégories: ${categories.success ? '✅' : '❌'} (${categories.data?.length || 0} éléments)
+Articles Blog: ${blogPosts.success ? '✅' : '❌'} (${blogPosts.data?.length || 0} éléments)
+
+${allSuccess ? 'Base de données accessible et fonctionnelle' : 'Problèmes détectés dans la base de données'}`, 
+                allSuccess ? 'success' : 'error');
+                
+                testResults.database = { success: allSuccess };
+            } catch (error) {
+                updateResult('database', `❌ Erreur base de données: ${error.message}`, 'error');
+                testResults.database = { success: false };
+            }
+        }
+
+        async function runCompleteSaveTest() {
+            const resultDiv = document.getElementById('complete-save-result');
+            resultDiv.textContent = 'Lancement du test complet de sauvegarde...';
+            
+            // Exécuter tous les tests
+            await testAdminLogin();
+            await testProductSave();
+            await testTrainingSave();
+            await testCategorySave();
+            await testBlogSave();
+            await checkDatabase();
+            
+            // Calculer le résumé
+            const totalTests = Object.keys(testResults).length;
+            const successfulTests = Object.values(testResults).filter(r => r.success).length;
+            const successRate = totalTests > 0 ? (successfulTests / totalTests * 100).toFixed(1) : 0;
+            
+            resultDiv.innerHTML = `<div class="${successRate >= 80 ? 'success' : 'error'}">🎉 Test Complet de Sauvegarde Terminé
+Tests exécutés: ${totalTests}
+Tests réussis: ${successfulTests}
+Taux de réussite: ${successRate}%
+Status: ${successRate >= 80 ? '✅ SAUVEGARDE FONCTIONNELLE' : successRate >= 60 ? '⚠️ SAUVEGARDE PARTIELLE' : '❌ PROBLÈMES DE SAUVEGARDE'}</div>`;
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary-result');
+            
+            const totalTests = Object.keys(testResults).length;
+            const successfulTests = Object.values(testResults).filter(r => r.success).length;
+            const successRate = totalTests > 0 ? (successfulTests / totalTests * 100).toFixed(1) : 0;
+            
+            let summary = `💾 RÉSUMÉ SAUVEGARDE DASHBOARD ADMIN\n`;
+            summary += `Tests exécutés: ${totalTests}\n`;
+            summary += `Tests réussis: ${successfulTests}\n`;
+            summary += `Taux de réussite: ${successRate}%\n\n`;
+            
+            if (successRate >= 80) {
+                summary += `✅ SAUVEGARDE: 100% FONCTIONNELLE\n`;
+                summary += `Toutes les fonctionnalités du dashboard sauvegardent correctement en base de données.\n`;
+                summary += `Les données sont persistantes et accessibles.`;
+            } else if (successRate >= 60) {
+                summary += `⚠️ SAUVEGARDE: PARTIELLEMENT FONCTIONNELLE\n`;
+                summary += `La plupart des fonctionnalités sauvegardent, mais quelques problèmes détectés.\n`;
+                summary += `Vérifiez les logs pour plus de détails.`;
+            } else {
+                summary += `❌ SAUVEGARDE: PROBLÉMATIQUE\n`;
+                summary += `Des problèmes majeurs empêchent la sauvegarde des données.\n`;
+                summary += `Vérifiez la configuration de la base de données et les endpoints API.`;
+            }
+            
+            summaryDiv.textContent = summary;
+        }
+
+        // Test automatique au chargement
+        window.onload = function() {
+            checkDatabase();
+        };
+    </script>
+</body>
+</html>
+

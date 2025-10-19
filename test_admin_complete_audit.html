@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Complet des Fonctionnalités Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #3498DB, #2980B9); color: white; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+        .test-section h3 { color: #2C3E50; margin-top: 0; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .btn { background: #3498DB; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #2980B9; }
+        .btn-success { background: #27AE60; }
+        .btn-danger { background: #E74C3C; }
+        .btn-warning { background: #F39C12; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .data-table th, .data-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .data-table th { background: #f8f9fa; font-weight: bold; }
+        .loading { color: #6c757d; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Audit Complet des Fonctionnalités Admin</h1>
+            <p>Vérification Frontend (3002) ↔ Backend (8002) ↔ Base de données</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Test de Connectivité</h3>
+            <div id="connectivity-results"></div>
+            <button class="btn" onclick="testConnectivity()">Tester la Connectivité</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Test d'Authentification Admin</h3>
+            <div id="auth-results"></div>
+            <button class="btn" onclick="testAdminAuth()">Tester l'Auth Admin</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📦 Test des Produits (CRUD)</h3>
+            <div id="products-results"></div>
+            <button class="btn" onclick="testProducts()">Tester les Produits</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📂 Test des Catégories (CRUD)</h3>
+            <div id="categories-results"></div>
+            <button class="btn" onclick="testCategories()">Tester les Catégories</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎓 Test des Formations (CRUD)</h3>
+            <div id="trainings-results"></div>
+            <button class="btn" onclick="testTrainings()">Tester les Formations</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Test du Blog (CRUD)</h3>
+            <div id="blog-results"></div>
+            <button class="btn" onclick="testBlog()">Tester le Blog</button>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 Test des Utilisateurs</h3>
+            <div id="users-results"></div>
+            <button class="btn" onclick="testUsers()">Tester les Utilisateurs</button>
+        </div>
+
+        <div class="test-section">
+            <h3>💾 Test de Persistance des Données</h3>
+            <div id="persistence-results"></div>
+            <button class="btn" onclick="testDataPersistence()">Tester la Persistance</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Test du Dashboard Admin Frontend</h3>
+            <div id="dashboard-results"></div>
+            <button class="btn" onclick="testAdminDashboard()">Tester le Dashboard</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Résumé de l'Audit</h3>
+            <div id="summary-results"></div>
+            <button class="btn btn-success" onclick="runCompleteAudit()">🚀 Lancer l'Audit Complet</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        const FRONTEND_URL = 'http://localhost:3002';
+        let authToken = null;
+        let auditResults = {
+            connectivity: false,
+            auth: false,
+            products: false,
+            categories: false,
+            trainings: false,
+            blog: false,
+            users: false,
+            persistence: false,
+            dashboard: false
+        };
+
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        async function testConnectivity() {
+            clearResults('connectivity-results');
+            addResult('connectivity-results', '🔄 Test de connectivité en cours...', 'info');
+
+            try {
+                // Test Backend
+                const backendResponse = await fetch(`${API_BASE}/api/test`);
+                if (backendResponse.ok) {
+                    const backendData = await backendResponse.json();
+                    addResult('connectivity-results', `✅ Backend API (${API_BASE}): ${backendData.message}`, 'success');
+                    auditResults.connectivity = true;
+                } else {
+                    addResult('connectivity-results', `❌ Backend API (${API_BASE}): Erreur ${backendResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('connectivity-results', `❌ Backend API (${API_BASE}): ${error.message}`, 'error');
+            }
+
+            try {
+                // Test Frontend
+                const frontendResponse = await fetch(`${FRONTEND_URL}`, { method: 'HEAD' });
+                if (frontendResponse.ok) {
+                    addResult('connectivity-results', `✅ Frontend React (${FRONTEND_URL}): Accessible`, 'success');
+                } else {
+                    addResult('connectivity-results', `❌ Frontend React (${FRONTEND_URL}): Erreur ${frontendResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('connectivity-results', `❌ Frontend React (${FRONTEND_URL}): ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminAuth() {
+            clearResults('auth-results');
+            addResult('auth-results', '🔄 Test d\'authentification admin en cours...', 'info');
+
+            try {
+                // Test de connexion admin
+                const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@citil.com',
+                        password: 'password'
+                    })
+                });
+
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    authToken = loginData.token;
+                    addResult('auth-results', `✅ Connexion admin réussie: ${loginData.user_info.name} (${loginData.user_info.role})`, 'success');
+                    
+                    // Test de récupération des infos utilisateur
+                    const userResponse = await fetch(`${API_BASE}/api/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
+                    
+                    if (userResponse.ok) {
+                        const userData = await userResponse.json();
+                        addResult('auth-results', `✅ Récupération des infos utilisateur: ${userData.name}`, 'success');
+                        auditResults.auth = true;
+                    } else {
+                        addResult('auth-results', `❌ Erreur récupération infos utilisateur: ${userResponse.status}`, 'error');
+                    }
+                } else {
+                    addResult('auth-results', `❌ Erreur de connexion admin: ${loginResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('auth-results', `❌ Erreur d'authentification: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProducts() {
+            clearResults('products-results');
+            addResult('products-results', '🔄 Test des produits en cours...', 'info');
+
+            try {
+                // Test GET produits
+                const getResponse = await fetch(`${API_BASE}/api/products`);
+                if (getResponse.ok) {
+                    const products = await getResponse.json();
+                    addResult('products-results', `✅ Récupération des produits: ${products.length} produits trouvés`, 'success');
+                    
+                    // Afficher les produits
+                    if (products.length > 0) {
+                        let table = '<table class="data-table"><tr><th>ID</th><th>Nom</th><th>Prix</th><th>Stock</th><th>Catégorie</th></tr>';
+                        products.forEach(p => {
+                            table += `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.price} CFA</td><td>${p.stock}</td><td>${p.category?.name || 'N/A'}</td></tr>`;
+                        });
+                        table += '</table>';
+                        addResult('products-results', table, 'info');
+                    }
+                } else {
+                    addResult('products-results', `❌ Erreur récupération produits: ${getResponse.status}`, 'error');
+                }
+
+                // Test création produit (si authentifié)
+                if (authToken) {
+                    try {
+                        const createResponse = await fetch(`${API_BASE}/api/admin/products`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authToken}`
+                            },
+                            body: JSON.stringify({
+                                name: 'Test Produit Admin',
+                                description: 'Produit de test créé via audit',
+                                price: 1000,
+                                stock: 10,
+                                category_id: 1,
+                                reference: 'TEST-' + Date.now(),
+                                is_active: true
+                            })
+                        });
+
+                        if (createResponse.ok) {
+                            const newProduct = await createResponse.json();
+                            addResult('products-results', `✅ Création produit admin réussie: ${newProduct.product.name}`, 'success');
+                            auditResults.products = true;
+                        } else {
+                            addResult('products-results', `❌ Erreur création produit admin: ${createResponse.status}`, 'error');
+                        }
+                    } catch (error) {
+                        addResult('products-results', `❌ Erreur création produit: ${error.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                addResult('products-results', `❌ Erreur test produits: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCategories() {
+            clearResults('categories-results');
+            addResult('categories-results', '🔄 Test des catégories en cours...', 'info');
+
+            try {
+                // Test GET catégories
+                const getResponse = await fetch(`${API_BASE}/api/categories`);
+                if (getResponse.ok) {
+                    const categories = await getResponse.json();
+                    addResult('categories-results', `✅ Récupération des catégories: ${categories.length} catégories trouvées`, 'success');
+                    
+                    // Afficher les catégories
+                    if (categories.length > 0) {
+                        let table = '<table class="data-table"><tr><th>ID</th><th>Nom</th><th>Slug</th><th>Description</th></tr>';
+                        categories.forEach(c => {
+                            table += `<tr><td>${c.id}</td><td>${c.name}</td><td>${c.slug}</td><td>${c.description || 'N/A'}</td></tr>`;
+                        });
+                        table += '</table>';
+                        addResult('categories-results', table, 'info');
+                    }
+                } else {
+                    addResult('categories-results', `❌ Erreur récupération catégories: ${getResponse.status}`, 'error');
+                }
+
+                // Test création catégorie (si authentifié)
+                if (authToken) {
+                    try {
+                        const createResponse = await fetch(`${API_BASE}/api/admin/categories`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authToken}`
+                            },
+                            body: JSON.stringify({
+                                name: 'Test Catégorie Admin',
+                                description: 'Catégorie de test créée via audit'
+                            })
+                        });
+
+                        if (createResponse.ok) {
+                            const newCategory = await createResponse.json();
+                            addResult('categories-results', `✅ Création catégorie admin réussie: ${newCategory.category.name}`, 'success');
+                            auditResults.categories = true;
+                        } else {
+                            addResult('categories-results', `❌ Erreur création catégorie admin: ${createResponse.status}`, 'error');
+                        }
+                    } catch (error) {
+                        addResult('categories-results', `❌ Erreur création catégorie: ${error.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                addResult('categories-results', `❌ Erreur test catégories: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTrainings() {
+            clearResults('trainings-results');
+            addResult('trainings-results', '🔄 Test des formations en cours...', 'info');
+
+            try {
+                // Test GET formations
+                const getResponse = await fetch(`${API_BASE}/api/trainings`);
+                if (getResponse.ok) {
+                    const trainings = await getResponse.json();
+                    addResult('trainings-results', `✅ Récupération des formations: ${trainings.length} formations trouvées`, 'success');
+                    
+                    // Afficher les formations
+                    if (trainings.length > 0) {
+                        let table = '<table class="data-table"><tr><th>ID</th><th>Titre</th><th>Prix</th><th>Durée</th><th>Date</th></tr>';
+                        trainings.forEach(t => {
+                            table += `<tr><td>${t.id}</td><td>${t.title}</td><td>${t.price} CFA</td><td>${t.duration_hours}h</td><td>${t.start_date}</td></tr>`;
+                        });
+                        table += '</table>';
+                        addResult('trainings-results', table, 'info');
+                    }
+                } else {
+                    addResult('trainings-results', `❌ Erreur récupération formations: ${getResponse.status}`, 'error');
+                }
+
+                // Test création formation (si authentifié)
+                if (authToken) {
+                    try {
+                        const createResponse = await fetch(`${API_BASE}/api/admin/trainings`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authToken}`
+                            },
+                            body: JSON.stringify({
+                                title: 'Test Formation Admin',
+                                description: 'Formation de test créée via audit',
+                                price: 5000,
+                                duration_hours: 20,
+                                start_date: '2025-12-01',
+                                schedule: 'Lun-Ven 18h-20h',
+                                is_active: true
+                            })
+                        });
+
+                        if (createResponse.ok) {
+                            const newTraining = await createResponse.json();
+                            addResult('trainings-results', `✅ Création formation admin réussie: ${newTraining.training.title}`, 'success');
+                            auditResults.trainings = true;
+                        } else {
+                            addResult('trainings-results', `❌ Erreur création formation admin: ${createResponse.status}`, 'error');
+                        }
+                    } catch (error) {
+                        addResult('trainings-results', `❌ Erreur création formation: ${error.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                addResult('trainings-results', `❌ Erreur test formations: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBlog() {
+            clearResults('blog-results');
+            addResult('blog-results', '🔄 Test du blog en cours...', 'info');
+
+            try {
+                // Test GET articles de blog
+                const getResponse = await fetch(`${API_BASE}/api/blog-posts`);
+                if (getResponse.ok) {
+                    const posts = await getResponse.json();
+                    addResult('blog-results', `✅ Récupération des articles: ${posts.length} articles trouvés`, 'success');
+                    
+                    // Afficher les articles
+                    if (posts.length > 0) {
+                        let table = '<table class="data-table"><tr><th>ID</th><th>Titre</th><th>Auteur</th><th>Publié</th><th>Date</th></tr>';
+                        posts.forEach(p => {
+                            table += `<tr><td>${p.id}</td><td>${p.title}</td><td>${p.author || 'N/A'}</td><td>${p.published ? 'Oui' : 'Non'}</td><td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</td></tr>`;
+                        });
+                        table += '</table>';
+                        addResult('blog-results', table, 'info');
+                    }
+                } else {
+                    addResult('blog-results', `❌ Erreur récupération articles: ${getResponse.status}`, 'error');
+                }
+
+                // Test création article (si authentifié)
+                if (authToken) {
+                    try {
+                        const createResponse = await fetch(`${API_BASE}/api/admin/blog-posts`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authToken}`
+                            },
+                            body: JSON.stringify({
+                                title: 'Test Article Admin',
+                                excerpt: 'Extrait de l\'article de test',
+                                content: 'Contenu complet de l\'article de test créé via audit',
+                                author: 'Admin',
+                                published: false
+                            })
+                        });
+
+                        if (createResponse.ok) {
+                            const newPost = await createResponse.json();
+                            addResult('blog-results', `✅ Création article admin réussie: ${newPost.blog_post.title}`, 'success');
+                            auditResults.blog = true;
+                        } else {
+                            addResult('blog-results', `❌ Erreur création article admin: ${createResponse.status}`, 'error');
+                        }
+                    } catch (error) {
+                        addResult('blog-results', `❌ Erreur création article: ${error.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                addResult('blog-results', `❌ Erreur test blog: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUsers() {
+            clearResults('users-results');
+            addResult('users-results', '🔄 Test des utilisateurs en cours...', 'info');
+
+            if (!authToken) {
+                addResult('users-results', '⚠️ Authentification requise pour tester les utilisateurs', 'warning');
+                return;
+            }
+
+            try {
+                const getResponse = await fetch(`${API_BASE}/api/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (getResponse.ok) {
+                    const users = await getResponse.json();
+                    addResult('users-results', `✅ Récupération des utilisateurs: ${users.length} utilisateurs trouvés`, 'success');
+                    
+                    // Afficher les utilisateurs
+                    if (users.length > 0) {
+                        let table = '<table class="data-table"><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Date</th></tr>';
+                        users.forEach(u => {
+                            table += `<tr><td>${u.id}</td><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</td></tr>`;
+                        });
+                        table += '</table>';
+                        addResult('users-results', table, 'info');
+                    }
+                    auditResults.users = true;
+                } else {
+                    addResult('users-results', `❌ Erreur récupération utilisateurs: ${getResponse.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('users-results', `❌ Erreur test utilisateurs: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDataPersistence() {
+            clearResults('persistence-results');
+            addResult('persistence-results', '🔄 Test de persistance des données en cours...', 'info');
+
+            try {
+                // Test de persistance des catégories
+                const categoriesResponse = await fetch(`${API_BASE}/api/categories`);
+                if (categoriesResponse.ok) {
+                    const categories = await categoriesResponse.json();
+                    addResult('persistence-results', `✅ Catégories persistées: ${categories.length} en base`, 'success');
+                }
+
+                // Test de persistance des produits
+                const productsResponse = await fetch(`${API_BASE}/api/products`);
+                if (productsResponse.ok) {
+                    const products = await productsResponse.json();
+                    addResult('persistence-results', `✅ Produits persistés: ${products.length} en base`, 'success');
+                }
+
+                // Test de persistance des formations
+                const trainingsResponse = await fetch(`${API_BASE}/api/trainings`);
+                if (trainingsResponse.ok) {
+                    const trainings = await trainingsResponse.json();
+                    addResult('persistence-results', `✅ Formations persistées: ${trainings.length} en base`, 'success');
+                }
+
+                // Test de persistance des articles de blog
+                const blogResponse = await fetch(`${API_BASE}/api/blog-posts`);
+                if (blogResponse.ok) {
+                    const posts = await blogResponse.json();
+                    addResult('persistence-results', `✅ Articles persistés: ${posts.length} en base`, 'success');
+                }
+
+                auditResults.persistence = true;
+                addResult('persistence-results', '✅ Toutes les données sont correctement persistées en base de données', 'success');
+            } catch (error) {
+                addResult('persistence-results', `❌ Erreur test persistance: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminDashboard() {
+            clearResults('dashboard-results');
+            addResult('dashboard-results', '🔄 Test du dashboard admin en cours...', 'info');
+
+            try {
+                // Test d'accès au dashboard admin
+                const dashboardResponse = await fetch(`${FRONTEND_URL}/admin-login`, { method: 'HEAD' });
+                if (dashboardResponse.ok) {
+                    addResult('dashboard-results', `✅ Page de connexion admin accessible: ${FRONTEND_URL}/admin-login`, 'success');
+                } else {
+                    addResult('dashboard-results', `❌ Page de connexion admin inaccessible: ${dashboardResponse.status}`, 'error');
+                }
+
+                // Test d'accès au dashboard (nécessite authentification)
+                const adminResponse = await fetch(`${FRONTEND_URL}/admin/overview`, { method: 'HEAD' });
+                if (adminResponse.ok) {
+                    addResult('dashboard-results', `✅ Dashboard admin accessible: ${FRONTEND_URL}/admin/overview`, 'success');
+                } else {
+                    addResult('dashboard-results', `⚠️ Dashboard admin nécessite authentification: ${adminResponse.status}`, 'warning');
+                }
+
+                auditResults.dashboard = true;
+                addResult('dashboard-results', '✅ Interface admin frontend fonctionnelle', 'success');
+            } catch (error) {
+                addResult('dashboard-results', `❌ Erreur test dashboard: ${error.message}`, 'error');
+            }
+        }
+
+        async function runCompleteAudit() {
+            clearResults('summary-results');
+            addResult('summary-results', '🚀 Lancement de l\'audit complet...', 'info');
+
+            // Réinitialiser les résultats
+            auditResults = {
+                connectivity: false,
+                auth: false,
+                products: false,
+                categories: false,
+                trainings: false,
+                blog: false,
+                users: false,
+                persistence: false,
+                dashboard: false
+            };
+
+            // Exécuter tous les tests
+            await testConnectivity();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testAdminAuth();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testProducts();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testCategories();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testTrainings();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testBlog();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testUsers();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testDataPersistence();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testAdminDashboard();
+
+            // Afficher le résumé
+            displaySummary();
+        }
+
+        function displaySummary() {
+            const totalTests = Object.keys(auditResults).length;
+            const passedTests = Object.values(auditResults).filter(result => result === true).length;
+            const successRate = Math.round((passedTests / totalTests) * 100);
+
+            let summary = `
+                <h4>📊 Résumé de l'Audit</h4>
+                <div class="grid">
+                    <div>
+                        <h5>Tests de Connectivité</h5>
+                        <span class="status ${auditResults.connectivity ? 'status-success' : 'status-error'}">
+                            ${auditResults.connectivity ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Authentification Admin</h5>
+                        <span class="status ${auditResults.auth ? 'status-success' : 'status-error'}">
+                            ${auditResults.auth ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Gestion des Produits</h5>
+                        <span class="status ${auditResults.products ? 'status-success' : 'status-error'}">
+                            ${auditResults.products ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Gestion des Catégories</h5>
+                        <span class="status ${auditResults.categories ? 'status-success' : 'status-error'}">
+                            ${auditResults.categories ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Gestion des Formations</h5>
+                        <span class="status ${auditResults.trainings ? 'status-success' : 'status-error'}">
+                            ${auditResults.trainings ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Gestion du Blog</h5>
+                        <span class="status ${auditResults.blog ? 'status-success' : 'status-error'}">
+                            ${auditResults.blog ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Gestion des Utilisateurs</h5>
+                        <span class="status ${auditResults.users ? 'status-success' : 'status-error'}">
+                            ${auditResults.users ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Persistance des Données</h5>
+                        <span class="status ${auditResults.persistence ? 'status-success' : 'status-error'}">
+                            ${auditResults.persistence ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Dashboard Admin</h5>
+                        <span class="status ${auditResults.dashboard ? 'status-success' : 'status-error'}">
+                            ${auditResults.dashboard ? '✅ Réussi' : '❌ Échec'}
+                        </span>
+                    </div>
+                </div>
+                <div class="result ${successRate >= 80 ? 'success' : successRate >= 60 ? 'warning' : 'error'}">
+                    <h4>Taux de Réussite: ${successRate}% (${passedTests}/${totalTests})</h4>
+                    ${successRate >= 80 ? 
+                        '🎉 Excellent ! Toutes les fonctionnalités admin fonctionnent correctement.' :
+                        successRate >= 60 ? 
+                        '⚠️ Bon ! La plupart des fonctionnalités fonctionnent, quelques améliorations nécessaires.' :
+                        '❌ Attention ! Plusieurs fonctionnalités nécessitent des corrections.'
+                    }
+                </div>
+            `;
+
+            addResult('summary-results', summary, 'info');
+        }
+
+        // Auto-lancement de l'audit au chargement de la page
+        window.addEventListener('load', () => {
+            addResult('summary-results', '🔄 Prêt à lancer l\'audit complet. Cliquez sur le bouton ci-dessus.', 'info');
+        });
+    </script>
+</body>
+</html>

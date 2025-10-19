@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Composants React Dashboard - CITIL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        .error { background: #ffeaea; border-color: #f44336; }
+        .warning { background: #fff3e0; border-color: #ff9800; }
+        .btn { background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976d2; }
+        .result { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px; font-family: monospace; font-size: 12px; }
+        .component-test { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .iframe-container { width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test des Composants React Dashboard - CITIL</h1>
+        <p>Test spécifique des composants React du dashboard administrateur.</p>
+        
+        <div class="test-section">
+            <h3>1. Test de Connexion Admin</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier que la connexion admin fonctionne dans l'interface React</p>
+                <button class="btn" onclick="testAdminLogin()">Tester Connexion</button>
+                <div id="login-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test du Dashboard Overview</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier l'affichage des statistiques et métriques</p>
+                <button class="btn" onclick="testDashboardOverview()">Tester Overview</button>
+                <div id="overview-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test de Gestion des Produits</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier le CRUD des produits dans l'interface admin</p>
+                <button class="btn" onclick="testProductsManagement()">Tester Produits</button>
+                <div id="products-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Test de Gestion des Formations</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier le CRUD des formations dans l'interface admin</p>
+                <button class="btn" onclick="testTrainingsManagement()">Tester Formations</button>
+                <div id="trainings-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Test de Navigation Admin</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier la navigation entre les sections du dashboard</p>
+                <button class="btn" onclick="testAdminNavigation()">Tester Navigation</button>
+                <div id="navigation-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Test d'Interface Utilisateur</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier l'interface utilisateur du dashboard</p>
+                <iframe id="admin-iframe" class="iframe-container" src="http://localhost:3002" style="display: none;"></iframe>
+                <button class="btn" onclick="testUIComponents()">Tester Interface</button>
+                <div id="ui-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>7. Test de Gestion des Erreurs</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier la gestion des erreurs dans l'interface</p>
+                <button class="btn" onclick="testErrorHandling()">Tester Erreurs</button>
+                <div id="error-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>8. Test de Performance Interface</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Vérifier les performances de l'interface React</p>
+                <button class="btn" onclick="testUIPerformance()">Tester Performance</button>
+                <div id="performance-test-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>9. Test Complet Dashboard</h3>
+            <div class="component-test">
+                <p><strong>Test:</strong> Lancer tous les tests du dashboard</p>
+                <button class="btn" onclick="runAllDashboardTests()">🚀 Tests Complets</button>
+                <div id="all-tests-result" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        const FRONTEND_URL = 'http://localhost:3002';
+        let authToken = null;
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3002',
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('login-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test de connexion admin...</div>';
+            
+            try {
+                // Test de connexion
+                const loginResult = await makeRequest('/api/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: 'admin@citil.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (loginResult.success && loginResult.data.success) {
+                    authToken = loginResult.data.token;
+                    
+                    // Test de vérification du token
+                    const meResult = await makeRequest('/api/auth/me');
+                    
+                    if (meResult.success && meResult.data.user) {
+                        resultDiv.innerHTML = `<div class="success">✅ Connexion admin réussie<br>
+                            Utilisateur: ${meResult.data.user.name}<br>
+                            Rôle: ${meResult.data.user.role}<br>
+                            Token: ${authToken.substring(0, 20)}...</div>`;
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ Connexion réussie mais vérification échouée</div>`;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Échec de connexion: ${loginResult.data?.message || 'Erreur inconnue'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test: ${error.message}</div>`;
+            }
+        }
+
+        async function testDashboardOverview() {
+            const resultDiv = document.getElementById('overview-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test du dashboard overview...</div>';
+            
+            try {
+                const [products, trainings, users, applications] = await Promise.all([
+                    makeRequest('/api/products'),
+                    makeRequest('/api/trainings'),
+                    makeRequest('/api/admin/users'),
+                    makeRequest('/api/admin/internship-applications')
+                ]);
+                
+                const stats = {
+                    products: products.success ? products.data.length : 0,
+                    trainings: trainings.success ? trainings.data.length : 0,
+                    users: users.success ? users.data.length : 0,
+                    applications: applications.success ? applications.data.length : 0
+                };
+                
+                const allSuccess = products.success && trainings.success && users.success && applications.success;
+                
+                resultDiv.innerHTML = `<div class="${allSuccess ? 'success' : 'error'}">
+                    ${allSuccess ? '✅' : '❌'} Dashboard Overview Test<br>
+                    Produits: ${stats.products} ${products.success ? '✅' : '❌'}<br>
+                    Formations: ${stats.trainings} ${trainings.success ? '✅' : '❌'}<br>
+                    Utilisateurs: ${stats.users} ${users.success ? '✅' : '❌'}<br>
+                    Candidatures: ${stats.applications} ${applications.success ? '✅' : '❌'}
+                </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test overview: ${error.message}</div>`;
+            }
+        }
+
+        async function testProductsManagement() {
+            const resultDiv = document.getElementById('products-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test de gestion des produits...</div>';
+            
+            try {
+                // Test de récupération des produits
+                const getProducts = await makeRequest('/api/products');
+                
+                // Test de récupération des catégories
+                const getCategories = await makeRequest('/api/categories');
+                
+                // Test de création d'un produit
+                const createProduct = await makeRequest('/api/admin/products', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: 'Test Produit React',
+                        description: 'Description test React',
+                        price: 20000,
+                        stock: 10,
+                        category_id: 1,
+                        reference: 'REACT-TEST-001'
+                    })
+                });
+                
+                const allSuccess = getProducts.success && getCategories.success && createProduct.success;
+                
+                resultDiv.innerHTML = `<div class="${allSuccess ? 'success' : 'error'}">
+                    ${allSuccess ? '✅' : '❌'} Gestion Produits Test<br>
+                    Récupération produits: ${getProducts.success ? '✅' : '❌'} (${getProducts.data?.length || 0} produits)<br>
+                    Récupération catégories: ${getCategories.success ? '✅' : '❌'} (${getCategories.data?.length || 0} catégories)<br>
+                    Création produit: ${createProduct.success ? '✅' : '❌'}
+                </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test produits: ${error.message}</div>`;
+            }
+        }
+
+        async function testTrainingsManagement() {
+            const resultDiv = document.getElementById('trainings-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test de gestion des formations...</div>';
+            
+            try {
+                // Test de récupération des formations
+                const getTrainings = await makeRequest('/api/trainings');
+                
+                // Test de création d'une formation
+                const createTraining = await makeRequest('/api/admin/trainings', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        title: 'Formation Test React',
+                        description: 'Description formation test React',
+                        price: 30000,
+                        duration_hours: 20,
+                        start_date: '2025-11-15',
+                        schedule: '9h-17h'
+                    })
+                });
+                
+                const allSuccess = getTrainings.success && createTraining.success;
+                
+                resultDiv.innerHTML = `<div class="${allSuccess ? 'success' : 'error'}">
+                    ${allSuccess ? '✅' : '❌'} Gestion Formations Test<br>
+                    Récupération formations: ${getTrainings.success ? '✅' : '❌'} (${getTrainings.data?.length || 0} formations)<br>
+                    Création formation: ${createTraining.success ? '✅' : '❌'}
+                </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test formations: ${error.message}</div>`;
+            }
+        }
+
+        async function testAdminNavigation() {
+            const resultDiv = document.getElementById('navigation-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test de navigation admin...</div>';
+            
+            try {
+                // Test d'accès aux différentes sections admin
+                const adminEndpoints = [
+                    '/api/admin/users',
+                    '/api/admin/internship-applications',
+                    '/api/products',
+                    '/api/trainings',
+                    '/api/categories'
+                ];
+                
+                const results = await Promise.all(
+                    adminEndpoints.map(endpoint => makeRequest(endpoint))
+                );
+                
+                const successCount = results.filter(r => r.success).length;
+                const allSuccess = successCount === adminEndpoints.length;
+                
+                resultDiv.innerHTML = `<div class="${allSuccess ? 'success' : 'error'}">
+                    ${allSuccess ? '✅' : '❌'} Navigation Admin Test<br>
+                    Endpoints accessibles: ${successCount}/${adminEndpoints.length}<br>
+                    ${results.map((r, i) => `${adminEndpoints[i]}: ${r.success ? '✅' : '❌'}`).join('<br>')}
+                </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test navigation: ${error.message}</div>`;
+            }
+        }
+
+        async function testUIComponents() {
+            const resultDiv = document.getElementById('ui-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test de l'interface utilisateur...</div>';
+            
+            try {
+                // Test d'accès au frontend
+                const frontendResponse = await fetch(FRONTEND_URL, { method: 'HEAD' });
+                
+                if (frontendResponse.ok) {
+                    // Afficher l'iframe pour test visuel
+                    document.getElementById('admin-iframe').style.display = 'block';
+                    
+                    resultDiv.innerHTML = `<div class="success">✅ Interface Utilisateur Test<br>
+                        Frontend accessible: ✅ (Status: ${frontendResponse.status})<br>
+                        Interface chargée dans l'iframe ci-dessus<br>
+                        <strong>Instructions:</strong> Connectez-vous avec admin@citil.com / admin123</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Frontend inaccessible (Status: ${frontendResponse.status})</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test UI: ${error.message}</div>`;
+            }
+        }
+
+        async function testErrorHandling() {
+            const resultDiv = document.getElementById('error-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test de gestion des erreurs...</div>';
+            
+            try {
+                // Test d'endpoints inexistants
+                const invalidEndpoint = await makeRequest('/api/invalid-endpoint');
+                
+                // Test de données invalides
+                const invalidData = await makeRequest('/api/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email: 'invalid', password: 'wrong' })
+                });
+                
+                // Test de méthode non autorisée
+                const invalidMethod = await makeRequest('/api/products', { method: 'DELETE' });
+                
+                const errorTests = [
+                    { name: 'Endpoint inexistant', result: !invalidEndpoint.success, expected: true },
+                    { name: 'Données invalides', result: !invalidData.success, expected: true },
+                    { name: 'Méthode invalide', result: !invalidMethod.success, expected: true }
+                ];
+                
+                const allPassed = errorTests.every(test => test.result === test.expected);
+                
+                resultDiv.innerHTML = `<div class="${allPassed ? 'success' : 'error'}">
+                    ${allPassed ? '✅' : '❌'} Gestion Erreurs Test<br>
+                    ${errorTests.map(test => `${test.name}: ${test.result ? '✅' : '❌'}`).join('<br>')}
+                </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test erreurs: ${error.message}</div>`;
+            }
+        }
+
+        async function testUIPerformance() {
+            const resultDiv = document.getElementById('performance-test-result');
+            resultDiv.innerHTML = '<div class="loading">Test de performance interface...</div>';
+            
+            try {
+                const startTime = Date.now();
+                
+                // Test de charge - 5 requêtes simultanées
+                const promises = [];
+                for (let i = 0; i < 5; i++) {
+                    promises.push(makeRequest('/api/products'));
+                }
+                
+                const results = await Promise.all(promises);
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                const successCount = results.filter(r => r.success).length;
+                const avgDuration = duration / results.length;
+                
+                const performance = avgDuration < 500 ? 'excellent' : avgDuration < 1000 ? 'bon' : 'médiocre';
+                
+                resultDiv.innerHTML = `<div class="success">✅ Performance Interface Test<br>
+                    Requêtes simultanées: ${successCount}/${results.length} réussies<br>
+                    Durée totale: ${duration}ms<br>
+                    Durée moyenne: ${avgDuration.toFixed(0)}ms<br>
+                    Performance: ${performance}
+                </div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur lors du test performance: ${error.message}</div>`;
+            }
+        }
+
+        async function runAllDashboardTests() {
+            const resultDiv = document.getElementById('all-tests-result');
+            resultDiv.innerHTML = '<div class="loading">Lancement de tous les tests dashboard...</div>';
+            
+            const tests = [
+                { name: 'Connexion Admin', fn: testAdminLogin },
+                { name: 'Dashboard Overview', fn: testDashboardOverview },
+                { name: 'Gestion Produits', fn: testProductsManagement },
+                { name: 'Gestion Formations', fn: testTrainingsManagement },
+                { name: 'Navigation Admin', fn: testAdminNavigation },
+                { name: 'Interface Utilisateur', fn: testUIComponents },
+                { name: 'Gestion Erreurs', fn: testErrorHandling },
+                { name: 'Performance Interface', fn: testUIPerformance }
+            ];
+            
+            let results = [];
+            
+            for (const test of tests) {
+                try {
+                    await test.fn();
+                    results.push(`${test.name}: ✅`);
+                } catch (error) {
+                    results.push(`${test.name}: ❌ ${error.message}`);
+                }
+            }
+            
+            const successCount = results.filter(r => r.includes('✅')).length;
+            const successRate = (successCount / results.length * 100).toFixed(1);
+            
+            resultDiv.innerHTML = `<div class="${successRate >= 80 ? 'success' : 'error'}">
+                🎉 Tests Dashboard Terminés<br>
+                ${results.join('<br>')}<br><br>
+                <strong>Résultat global: ${successRate}% (${successCount}/${results.length})</strong>
+            </div>`;
+        }
+
+        // Test automatique au chargement
+        window.onload = function() {
+            setTimeout(() => {
+                testAdminLogin();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

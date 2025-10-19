@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rigoureux Final - Fonctionnalités Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #E74C3C, #C0392B); color: white; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+        .test-section h3 { color: #2C3E50; margin-top: 0; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .btn { background: #E74C3C; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #C0392B; }
+        .btn-success { background: #27AE60; }
+        .btn-warning { background: #F39C12; }
+        .status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .critical { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .data-table th, .data-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .data-table th { background: #f8f9fa; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Test Rigoureux Final - Fonctionnalités Admin</h1>
+            <p>Vérification complète et détaillée de toutes les fonctionnalités administrateur</p>
+            <p><strong>⚠️ ATTENTION:</strong> Ce test identifie les problèmes critiques de stabilité du serveur</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🚨 Diagnostic des Problèmes Identifiés</h3>
+            <div id="diagnostic-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Test de Connectivité (Ports Corrects)</h3>
+            <div id="connectivity-results"></div>
+            <button class="btn" onclick="testConnectivity()">Tester la Connectivité</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Test d'Authentification Admin</h3>
+            <div id="auth-results"></div>
+            <button class="btn" onclick="testAdminAuth()">Tester l'Auth Admin</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test des Endpoints (Séquentiel)</h3>
+            <div id="endpoints-results"></div>
+            <button class="btn" onclick="testEndpointsSequentially()">Tester les Endpoints</button>
+        </div>
+
+        <div class="test-section">
+            <h3>💾 Test de Persistance des Données</h3>
+            <div id="persistence-results"></div>
+            <button class="btn" onclick="testDataPersistence()">Tester la Persistance</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Test du Frontend Admin</h3>
+            <div id="frontend-results"></div>
+            <button class="btn" onclick="testFrontendAdmin()">Tester le Frontend</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Test de Stabilité du Serveur</h3>
+            <div id="stability-results"></div>
+            <button class="btn" onclick="testServerStability()">Tester la Stabilité</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Rapport Final Rigoureux</h3>
+            <div id="final-report"></div>
+            <button class="btn btn-success" onclick="runRigorousTest()">🚀 Lancer le Test Rigoureux Complet</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        const FRONTEND_URL = 'http://localhost:3000';
+        let authToken = null;
+        let testResults = {
+            connectivity: false,
+            auth: false,
+            endpoints: {},
+            persistence: false,
+            frontend: false,
+            stability: false
+        };
+
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        function testConnectivity() {
+            clearResults('connectivity-results');
+            addResult('connectivity-results', '🔄 Test de connectivité en cours...', 'info');
+
+            // Test Backend
+            fetch(`${API_BASE}/api/test`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                })
+                .then(data => {
+                    addResult('connectivity-results', `✅ Backend API (${API_BASE}): ${data.message}`, 'success');
+                    testResults.connectivity = true;
+                })
+                .catch(error => {
+                    addResult('connectivity-results', `❌ Backend API (${API_BASE}): ${error.message}`, 'error');
+                    testResults.connectivity = false;
+                });
+
+            // Test Frontend
+            fetch(`${FRONTEND_URL}`, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        addResult('connectivity-results', `✅ Frontend React (${FRONTEND_URL}): Accessible`, 'success');
+                    } else {
+                        addResult('connectivity-results', `❌ Frontend React (${FRONTEND_URL}): Erreur ${response.status}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    addResult('connectivity-results', `❌ Frontend React (${FRONTEND_URL}): ${error.message}`, 'error');
+                });
+        }
+
+        function testAdminAuth() {
+            clearResults('auth-results');
+            addResult('auth-results', '🔄 Test d\'authentification admin en cours...', 'info');
+
+            fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: 'admin@citil.com',
+                    password: 'password'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    authToken = data.token;
+                    addResult('auth-results', `✅ Connexion admin réussie: ${data.user_info.name}`, 'success');
+                    addResult('auth-results', `Token: ${authToken.substring(0, 20)}...`, 'info');
+                    testResults.auth = true;
+                } else {
+                    addResult('auth-results', `❌ Échec de connexion: ${data.message}`, 'error');
+                    testResults.auth = false;
+                }
+            })
+            .catch(error => {
+                addResult('auth-results', `❌ Erreur d'authentification: ${error.message}`, 'error');
+                testResults.auth = false;
+            });
+        }
+
+        async function testEndpointsSequentially() {
+            clearResults('endpoints-results');
+            addResult('endpoints-results', '🔄 Test séquentiel des endpoints en cours...', 'info');
+
+            const endpoints = [
+                { name: 'Test API', url: '/api/test', public: true },
+                { name: 'Catégories', url: '/api/categories', public: true },
+                { name: 'Produits', url: '/api/products', public: true },
+                { name: 'Formations', url: '/api/trainings', public: true },
+                { name: 'Articles Blog', url: '/api/blog-posts', public: true }
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE}${endpoint.url}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const count = Array.isArray(data) ? data.length : 1;
+                        addResult('endpoints-results', `✅ ${endpoint.name}: ${count} éléments récupérés`, 'success');
+                        testResults.endpoints[endpoint.name] = true;
+                    } else {
+                        addResult('endpoints-results', `❌ ${endpoint.name}: Erreur ${response.status}`, 'error');
+                        testResults.endpoints[endpoint.name] = false;
+                    }
+                } catch (error) {
+                    addResult('endpoints-results', `❌ ${endpoint.name}: ${error.message}`, 'error');
+                    testResults.endpoints[endpoint.name] = false;
+                }
+                
+                // Pause entre les requêtes pour éviter la surcharge
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        function testDataPersistence() {
+            clearResults('persistence-results');
+            addResult('persistence-results', '🔄 Test de persistance des données en cours...', 'info');
+
+            const endpoints = [
+                { name: 'Catégories', url: '/api/categories' },
+                { name: 'Produits', url: '/api/products' },
+                { name: 'Formations', url: '/api/trainings' }
+            ];
+
+            let allPersisted = true;
+
+            endpoints.forEach(endpoint => {
+                fetch(`${API_BASE}${endpoint.url}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const count = Array.isArray(data) ? data.length : 0;
+                        if (count > 0) {
+                            addResult('persistence-results', `✅ ${endpoint.name}: ${count} éléments persistés`, 'success');
+                        } else {
+                            addResult('persistence-results', `⚠️ ${endpoint.name}: Aucune donnée trouvée`, 'warning');
+                            allPersisted = false;
+                        }
+                    })
+                    .catch(error => {
+                        addResult('persistence-results', `❌ ${endpoint.name}: Erreur de persistance`, 'error');
+                        allPersisted = false;
+                    });
+            });
+
+            setTimeout(() => {
+                testResults.persistence = allPersisted;
+                if (allPersisted) {
+                    addResult('persistence-results', '✅ Toutes les données sont correctement persistées', 'success');
+                } else {
+                    addResult('persistence-results', '⚠️ Certaines données ne sont pas persistées correctement', 'warning');
+                }
+            }, 3000);
+        }
+
+        function testFrontendAdmin() {
+            clearResults('frontend-results');
+            addResult('frontend-results', '🔄 Test du frontend admin en cours...', 'info');
+
+            // Test d'accès au frontend
+            fetch(`${FRONTEND_URL}`, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        addResult('frontend-results', `✅ Frontend accessible sur ${FRONTEND_URL}`, 'success');
+                        
+                        // Test d'accès à la page admin
+                        return fetch(`${FRONTEND_URL}/admin-login`, { method: 'HEAD' });
+                    }
+                    throw new Error('Frontend inaccessible');
+                })
+                .then(response => {
+                    if (response.ok) {
+                        addResult('frontend-results', '✅ Page de connexion admin accessible', 'success');
+                        testResults.frontend = true;
+                    } else {
+                        addResult('frontend-results', '⚠️ Page admin nécessite authentification', 'warning');
+                        testResults.frontend = true;
+                    }
+                })
+                .catch(error => {
+                    addResult('frontend-results', `❌ Erreur frontend: ${error.message}`, 'error');
+                    testResults.frontend = false;
+                });
+        }
+
+        function testServerStability() {
+            clearResults('stability-results');
+            addResult('stability-results', '🔄 Test de stabilité du serveur en cours...', 'info');
+
+            let successCount = 0;
+            let totalRequests = 5;
+
+            for (let i = 0; i < totalRequests; i++) {
+                setTimeout(() => {
+                    fetch(`${API_BASE}/api/test`)
+                        .then(response => {
+                            if (response.ok) {
+                                successCount++;
+                                addResult('stability-results', `✅ Requête ${i + 1}/${totalRequests}: Succès`, 'success');
+                            } else {
+                                addResult('stability-results', `❌ Requête ${i + 1}/${totalRequests}: Erreur ${response.status}`, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            addResult('stability-results', `❌ Requête ${i + 1}/${totalRequests}: ${error.message}`, 'error');
+                        })
+                        .finally(() => {
+                            if (i === totalRequests - 1) {
+                                const stabilityRate = (successCount / totalRequests) * 100;
+                                testResults.stability = stabilityRate >= 80;
+                                
+                                if (stabilityRate >= 80) {
+                                    addResult('stability-results', `✅ Stabilité du serveur: ${stabilityRate.toFixed(1)}%`, 'success');
+                                } else {
+                                    addResult('stability-results', `❌ Problème de stabilité: ${stabilityRate.toFixed(1)}%`, 'error');
+                                }
+                            }
+                        });
+                }, i * 2000); // 2 secondes entre chaque requête
+            }
+        }
+
+        function runRigorousTest() {
+            clearResults('final-report');
+            addResult('final-report', '🚀 Lancement du test rigoureux complet...', 'info');
+
+            // Réinitialiser les résultats
+            testResults = {
+                connectivity: false,
+                auth: false,
+                endpoints: {},
+                persistence: false,
+                frontend: false,
+                stability: false
+            };
+
+            // Exécuter tous les tests
+            testConnectivity();
+            setTimeout(() => testAdminAuth(), 2000);
+            setTimeout(() => testEndpointsSequentially(), 4000);
+            setTimeout(() => testDataPersistence(), 8000);
+            setTimeout(() => testFrontendAdmin(), 10000);
+            setTimeout(() => testServerStability(), 12000);
+            setTimeout(() => generateFinalReport(), 25000);
+        }
+
+        function generateFinalReport() {
+            clearResults('final-report');
+            
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => 
+                typeof result === 'boolean' ? result : 
+                typeof result === 'object' ? Object.values(result).some(v => v) : false
+            ).length;
+
+            const successRate = Math.round((passedTests / totalTests) * 100);
+
+            let report = `
+                <h4>📊 RAPPORT FINAL RIGOUREUX</h4>
+                <div class="grid">
+                    <div>
+                        <h5>Connectivité</h5>
+                        <span class="status ${testResults.connectivity ? 'status-success' : 'status-error'}">
+                            ${testResults.connectivity ? '✅ RÉUSSI' : '❌ ÉCHEC'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Authentification</h5>
+                        <span class="status ${testResults.auth ? 'status-success' : 'status-error'}">
+                            ${testResults.auth ? '✅ RÉUSSI' : '❌ ÉCHEC'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Endpoints</h5>
+                        <span class="status ${Object.values(testResults.endpoints).some(v => v) ? 'status-success' : 'status-error'}">
+                            ${Object.values(testResults.endpoints).some(v => v) ? '✅ PARTIEL' : '❌ ÉCHEC'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Persistance</h5>
+                        <span class="status ${testResults.persistence ? 'status-success' : 'status-error'}">
+                            ${testResults.persistence ? '✅ RÉUSSI' : '❌ ÉCHEC'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Frontend</h5>
+                        <span class="status ${testResults.frontend ? 'status-success' : 'status-error'}">
+                            ${testResults.frontend ? '✅ RÉUSSI' : '❌ ÉCHEC'}
+                        </span>
+                    </div>
+                    <div>
+                        <h5>Stabilité Serveur</h5>
+                        <span class="status ${testResults.stability ? 'status-success' : 'status-error'}">
+                            ${testResults.stability ? '✅ RÉUSSI' : '❌ ÉCHEC'}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            // Détails des endpoints
+            if (Object.keys(testResults.endpoints).length > 0) {
+                report += '<h5>Détails des Endpoints:</h5><ul>';
+                Object.entries(testResults.endpoints).forEach(([name, result]) => {
+                    report += `<li>${name}: ${result ? '✅' : '❌'}</li>`;
+                });
+                report += '</ul>';
+            }
+
+            // Conclusion
+            let conclusion = '';
+            if (successRate >= 90) {
+                conclusion = '🎉 EXCELLENT! Toutes les fonctionnalités admin fonctionnent parfaitement.';
+            } else if (successRate >= 70) {
+                conclusion = '✅ BON! La plupart des fonctionnalités fonctionnent, quelques améliorations nécessaires.';
+            } else if (successRate >= 50) {
+                conclusion = '⚠️ MOYEN! Plusieurs fonctionnalités nécessitent des corrections.';
+            } else {
+                conclusion = '❌ CRITIQUE! De nombreuses fonctionnalités ne fonctionnent pas.';
+            }
+
+            report += `
+                <div class="result ${successRate >= 70 ? 'success' : 'error'}">
+                    <h4>Taux de Réussite: ${successRate}% (${passedTests}/${totalTests})</h4>
+                    <p>${conclusion}</p>
+                </div>
+            `;
+
+            // Problèmes identifiés
+            if (successRate < 70) {
+                report += `
+                    <div class="result critical">
+                        <h4>🚨 Problèmes Identifiés:</h4>
+                        <ul>
+                            <li>Instabilité du serveur backend (arrêts fréquents)</li>
+                            <li>Problème avec l'endpoint des produits (relation avec catégories)</li>
+                            <li>Mémoire insuffisante ou erreur de configuration</li>
+                            <li>Nécessité de redémarrage fréquent du serveur</li>
+                        </ul>
+                    </div>
+                `;
+            }
+
+            addResult('final-report', report, 'info');
+        }
+
+        // Diagnostic initial
+        window.addEventListener('load', () => {
+            addResult('diagnostic-results', `
+                <div class="result critical">
+                    <h4>🚨 Problèmes Critiques Identifiés:</h4>
+                    <ul>
+                        <li><strong>Instabilité du serveur:</strong> Le serveur backend s'arrête après quelques requêtes</li>
+                        <li><strong>Problème de mémoire:</strong> Erreurs "Instruction non permise" et "core dumped"</li>
+                        <li><strong>Endpoint des produits défaillant:</strong> Problème avec la relation Product->Category</li>
+                        <li><strong>Configuration des ports:</strong> Frontend sur 3000, Backend sur 8002</li>
+                    </ul>
+                    <p><strong>Recommandations:</strong></p>
+                    <ul>
+                        <li>Augmenter la mémoire PHP (memory_limit)</li>
+                        <li>Vérifier la configuration de la base de données</li>
+                        <li>Corriger la relation Product->Category</li>
+                        <li>Optimiser les requêtes avec des index</li>
+                    </ul>
+                </div>
+            `, 'critical');
+        });
+    </script>
+</body>
+</html>

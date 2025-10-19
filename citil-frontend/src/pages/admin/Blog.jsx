@@ -73,24 +73,49 @@ export default function BlogAdmin() {
           <Table>
             <THead>
               <TR hover={false}>
+                <TH>ID</TH>
                 <TH>Titre</TH>
                 <TH>Auteur</TH>
-                <TH>Date</TH>
+                <TH>Catégorie</TH>
                 <TH>Statut</TH>
+                <TH>Date</TH>
+                <TH>Actions</TH>
               </TR>
             </THead>
             <TBody>
-              {posts.map((p) => (
-                <TR key={p.id}>
-                  <TD className="max-w-[320px] truncate flex items-center gap-2">
-                    {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
-                    <span className="truncate">{p.title}</span>
+              {posts.length === 0 ? (
+                <TR>
+                  <TD colSpan="7" className="text-center py-8 text-gray-500">
+                    Aucun article trouvé. Commencez par créer votre premier article.
                   </TD>
-                  <TD>{p.author || 'Admin'}</TD>
-                  <TD>{p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}</TD>
-                  <TD>{p.published ? 'Publié' : 'Brouillon'}</TD>
                 </TR>
-              ))}
+              ) : (
+                posts.map(p => (
+                  <TR key={p.id}>
+                    <TD>{p.id}</TD>
+                    <TD className="max-w-[220px] truncate flex items-center gap-2">
+                      {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                      <span className="truncate">{p.title}</span>
+                    </TD>
+                    <TD>{p.author || 'Admin'}</TD>
+                    <TD>{p.category?.name || 'N/A'}</TD>
+                    <TD>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        p.published 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {p.published ? 'Publié' : 'Brouillon'}
+                      </span>
+                    </TD>
+                    <TD>{p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}</TD>
+                    <TD className="space-x-2 whitespace-nowrap">
+                      <Button variant="secondary" className="px-2 py-1 text-xs">Modifier</Button>
+                      <Button className="px-2 py-1 text-xs">Supprimer</Button>
+                    </TD>
+                  </TR>
+                ))
+              )}
             </TBody>
           </Table>
         </div>

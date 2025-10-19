@@ -309,13 +309,13 @@ export const ApiService = {
     login: async (email, password) => {
         try {
             const response = await api.post('/api/auth/login', { email, password });
-            const { token, user } = response.data;
+            const { token, user_info } = response.data;
             
             localStorage.setItem('citil_token', token);
-            localStorage.setItem('citil_user', JSON.stringify(user));
+            localStorage.setItem('citil_user', JSON.stringify(user_info));
             window.dispatchEvent(new Event('authChanged'));
             
-            return { token, user: user };
+            return { token, user: user_info };
         } catch (error) {
             const message = error.response?.data?.message || 'Erreur de connexion';
             throw new Error(message);
@@ -609,6 +609,7 @@ export const ApiService = {
         await api.delete(`/api/admin/categories/${id}`);
         return true;
     },
+
 
     // --- CANDIDATURES/UTILISATEURS/DIVERS ADMIN ---
     submitInternshipApplication: async ({ name, email, message, cvFile }) => {
