@@ -5,6 +5,7 @@ import Button from '../../components/Button.jsx';
 import Modal from '../../components/ui/Modal.jsx';
 import { Label, Input, TextArea, Select, FieldError } from '../../components/ui/FormInput.jsx';
 import { ApiService } from '../../services/api.js';
+import { getImageUrl } from '../../utils/imageUtils.js';
 
 export default function BlogAdmin() {
   const [posts, setPosts] = useState([]);
@@ -104,7 +105,7 @@ export default function BlogAdmin() {
                   <TR key={p.id}>
                     <TD>{p.id}</TD>
                     <TD className="max-w-[220px] truncate flex items-center gap-2">
-                      {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                      {p.image && <img src={getImageUrl(p.image)} alt="" className="h-8 w-8 object-cover rounded" />}
                       <span className="truncate">{p.title}</span>
                     </TD>
                     <TD>{p.author || 'Admin'}</TD>

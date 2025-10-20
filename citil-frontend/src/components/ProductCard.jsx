@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from './Button.jsx';
 import { useCart } from '../context/CartContext.js';
+import { getImageUrl } from '../utils/imageUtils.js';
 
 export default function ProductCard({ product }) {
 	const { addToCart } = useCart();
 	return (
 		<motion.div whileHover={{ y: -4 }} className="rounded-lg overflow-hidden bg-white border shadow-sm">
 			<Link to={`/produit/${product.id}`}>
-				<img src={product.image} alt={product.name} className="h-44 w-full object-cover" />
+				<img src={getImageUrl(product.image)} alt={product.name} className="h-44 w-full object-cover" />
 			</Link>
 			<div className="p-4 space-y-2">
 				<Link to={`/produit/${product.id}`} className="block font-semibold text-[#2C3E50]">{product.name}</Link>

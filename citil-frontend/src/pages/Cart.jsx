@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import { useCart } from '../context/CartContext.js';
+import { getImageUrl } from '../utils/imageUtils.js';
 
 export default function Cart() {
 	const { cartItems, removeFromCart, addToCart, clearCart } = useCart();
@@ -18,7 +19,7 @@ export default function Cart() {
 					<div className="md:col-span-2 space-y-4">
 						{cartItems.map(item => (
 							<div key={item.id} className="flex items-center gap-4 bg-white border rounded-lg p-4">
-								<img src={item.image} alt={item.name} className="h-20 w-20 object-cover rounded" />
+								<img src={getImageUrl(item.image)} alt={item.name} className="h-20 w-20 object-cover rounded" />
 								<div className="flex-1">
 									<h3 className="font-semibold text-[#2C3E50]">{item.name}</h3>
 									<div className="text-sm text-gray-600">{item.price.toLocaleString()} CFA</div>

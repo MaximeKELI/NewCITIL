@@ -5,6 +5,7 @@ import Button from '../../components/Button.jsx';
 import Modal from '../../components/ui/Modal.jsx';
 import { Label, Input, TextArea, Select, FieldError } from '../../components/ui/FormInput.jsx';
 import { ApiService } from '../../services/api.js';
+import { getImageUrl } from '../../utils/imageUtils.js';
 import { useNotificationContext } from '../../context/NotificationContext.js';
 
 export default function ProductsAdmin() {
@@ -161,7 +162,7 @@ export default function ProductsAdmin() {
                   <TR key={p.id}>
                     <TD>{p.id}</TD>
                     <TD className="max-w-[220px] truncate flex items-center gap-2">
-                      {p.image && <img src={p.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                      {p.image && <img src={getImageUrl(p.image)} alt="" className="h-8 w-8 object-cover rounded" />}
                       <span className="truncate">{p.name}</span>
                     </TD>
                     <TD>{Number(p.price).toLocaleString()} CFA</TD>
@@ -189,7 +190,7 @@ export default function ProductsAdmin() {
             filtered.map(p => (
               <div key={p.id} className="bg-white rounded-lg border border-[#AED5E6] p-4 space-y-3">
                 <div className="flex items-start gap-3">
-                  {p.image && <img src={p.image} alt="" className="h-12 w-12 object-cover rounded flex-shrink-0" />}
+                  {p.image && <img src={getImageUrl(p.image)} alt="" className="h-12 w-12 object-cover rounded flex-shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-[#2C3E50] truncate">{p.name}</h3>
                     <p className="text-sm text-gray-600">ID: {p.id}</p>

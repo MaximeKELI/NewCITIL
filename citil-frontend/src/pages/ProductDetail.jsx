@@ -5,6 +5,7 @@ import Button from '../components/Button.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { ApiService } from '../services/api.js';
 import { useCart } from '../context/CartContext.js';
+import { getImageUrl } from '../utils/imageUtils.js';
 
 export default function ProductDetail() {
 	const { id } = useParams();
@@ -21,7 +22,7 @@ export default function ProductDetail() {
 	return (
 		<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid gap-8 md:grid-cols-2">
 			<div>
-				<motion.img initial={{ opacity: 0 }} animate={{ opacity: 1 }} src={product.image} alt={product.name} className="w-full rounded-lg border object-cover" />
+				<motion.img initial={{ opacity: 0 }} animate={{ opacity: 1 }} src={getImageUrl(product.image)} alt={product.name} className="w-full rounded-lg border object-cover" />
 			</div>
 			<div className="space-y-4">
 				<h1 className="text-2xl font-bold text-[#2C3E50]">{product.name}</h1>

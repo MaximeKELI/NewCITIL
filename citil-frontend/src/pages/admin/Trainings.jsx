@@ -5,6 +5,7 @@ import Button from '../../components/Button.jsx';
 import Modal from '../../components/ui/Modal.jsx';
 import { Label, Input, TextArea, FieldError } from '../../components/ui/FormInput.jsx';
 import { ApiService } from '../../services/api.js';
+import { getImageUrl } from '../../utils/imageUtils.js';
 
 export default function TrainingsAdmin() {
   const [items, setItems] = useState([]);
@@ -99,7 +100,7 @@ export default function TrainingsAdmin() {
                 items.map(t => (
                   <TR key={t.id}>
                     <TD className="font-medium max-w-[260px] truncate flex items-center gap-2">
-                      {t.image && <img src={t.image} alt="" className="h-8 w-8 object-cover rounded" />}
+                      {t.image && <img src={getImageUrl(t.image)} alt="" className="h-8 w-8 object-cover rounded" />}
                       <span className="truncate">{t.title}</span>
                     </TD>
                     <TD>{t.start_date}</TD>
@@ -127,7 +128,7 @@ export default function TrainingsAdmin() {
             items.map(t => (
               <div key={t.id} className="bg-white rounded-lg border border-[#AED5E6] p-4 space-y-3">
                 <div className="flex items-start gap-3">
-                  {t.image && <img src={t.image} alt="" className="h-12 w-12 object-cover rounded flex-shrink-0" />}
+                  {t.image && <img src={getImageUrl(t.image)} alt="" className="h-12 w-12 object-cover rounded flex-shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-[#2C3E50] truncate">{t.title}</h3>
                     <p className="text-sm text-gray-600">Date: {t.start_date}</p>
