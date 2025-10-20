@@ -308,15 +308,22 @@ export const ApiService = {
     // --- AUTHENTIFICATION ---
     login: async (email, password) => {
         try {
+            console.log('ApiService - Tentative de connexion:', email);
             const response = await api.post('/api/auth/login', { email, password });
-            const { token, user_info } = response.data;
+            console.log('ApiService - Réponse reçue:', response.data);
+            const { access_token, user_info } = response.data;
             
-            localStorage.setItem('citil_token', token);
+            console.log('ApiService - Token reçu:', !!access_token);
+            console.log('ApiService - User info reçu:', user_info);
+            
+            localStorage.setItem('citil_token', access_token);
             localStorage.setItem('citil_user', JSON.stringify(user_info));
             window.dispatchEvent(new Event('authChanged'));
             
-            return { token, user: user_info };
+            console.log('ApiService - Token et user stockés dans localStorage');
+            return { token: access_token, user_info };
         } catch (error) {
+            console.error('ApiService - Erreur de connexion:', error);
             const message = error.response?.data?.message || 'Erreur de connexion';
             throw new Error(message);
         }
@@ -338,7 +345,7 @@ export const ApiService = {
             localStorage.setItem('citil_user', JSON.stringify(user_info));
             window.dispatchEvent(new Event('authChanged'));
             
-            return { token, user: user_info };
+            return { token, user_info };
         } catch (error) {
             console.error('Erreur API d\'inscription:', error.response?.data);
             const message = error.response?.data?.message || 'Erreur d\'inscription';
@@ -367,7 +374,7 @@ export const ApiService = {
     getUserInfo: async () => {
         try {
             const response = await api.get('/api/auth/me');
-            return response.data;
+            return { user_info: response.data };
         } catch (error) {
             const message = error.response?.data?.message || 'Erreur lors de la récupération des informations utilisateur';
             throw new Error(message);

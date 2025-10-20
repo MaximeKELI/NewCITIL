@@ -18,12 +18,14 @@ export default function AdminLogin() {
 		
 		try {
 			const result = await login(email, password);
+			console.log('AdminLogin - Résultat de connexion:', result);
 			
 			// Vérifier si l'utilisateur est admin
-			if (result.user && result.user.role === 'admin') {
+			if (result.user_info && result.user_info.role === 'admin') {
 				console.log('Connexion admin réussie, redirection vers /admin');
 				navigate('/admin');
 			} else {
+				console.log('Utilisateur non admin, rôle:', result.user_info?.role);
 				setError('Accès refusé. Seuls les administrateurs peuvent accéder à cette page.');
 				// Déconnecter l'utilisateur non-admin
 				await logout();

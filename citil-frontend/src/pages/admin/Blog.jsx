@@ -9,13 +9,11 @@ import { ApiService } from '../../services/api.js';
 export default function BlogAdmin() {
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', excerpt: '', content: '', image: '', imageFile: null, blog_category_id: '', author: 'Admin', published: false });
+  const [form, setForm] = useState({ title: '', excerpt: '', content: '', image: '', imageFile: null, author: 'Admin', published: false });
   const [errors, setErrors] = useState({});
-  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     ApiService.getBlogPosts().then(setPosts);
-    ApiService.getBlogCategories().then(setCategories);
   }, []);
 
   function validate(v) {
@@ -23,13 +21,12 @@ export default function BlogAdmin() {
     if (!v.title) e.title = 'Titre requis';
     if (!v.excerpt) e.excerpt = 'Extrait requis';
     if (!v.content) e.content = 'Contenu requis';
-    if (!v.blog_category_id) e.blog_category_id = 'Catégorie requise';
     if (!v.image && !v.imageFile) e.image = 'Image requise';
     return e;
   }
 
   function openCreate() {
-    setForm({ title: '', excerpt: '', content: '', image: '', imageFile: null, blog_category_id: '', author: 'Admin', published: false });
+    setForm({ title: '', excerpt: '', content: '', image: '', imageFile: null, author: 'Admin', published: false });
     setErrors({});
     setOpen(true);
   }
@@ -41,6 +38,18 @@ export default function BlogAdmin() {
     setForm(f => ({ ...f, imageFile: file, image: url }));
   }
 
+  // Fonction pour générer un slug à partir du titre
+  function generateSlug(title) {
+    return title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+      .replace(/[^a-z0-9\s-]/g, '') // Supprimer les caractères spéciaux
+      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
+      .replace(/-+/g, '-') // Supprimer les tirets multiples
+      .trim();
+  }
+
   async function onSubmit(e) {
     e.preventDefault();
     const e1 = validate(form); setErrors(e1); if (Object.keys(e1).length) return;
@@ -48,10 +57,11 @@ export default function BlogAdmin() {
     try {
       const postData = {
         ...form,
-        published: Boolean(form.published),
-        blog_category_id: Number(form.blog_category_id)
+        slug: generateSlug(form.title),
+        published: Boolean(form.published)
       };
       
+      console.log('Données à envoyer:', postData);
       const created = await ApiService.createBlogPost(postData);
       setPosts(prev => [created, ...prev]);
       setOpen(false);
@@ -177,19 +187,9 @@ export default function BlogAdmin() {
             <TextArea id="content" value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={6} required />
             <FieldError>{errors.content}</FieldError>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="blog_category_id">Catégorie</Label>
-              <Select id="blog_category_id" value={form.blog_category_id} onChange={e => setForm({ ...form, blog_category_id: e.target.value })}>
-                <option value="">Sélectionner une catégorie</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </Select>
-              <FieldError>{errors.blog_category_id}</FieldError>
-            </div>
-            <div className="flex items-center gap-2 pt-6">
-              <input id="published" type="checkbox" checked={form.published} onChange={e => setForm({ ...form, published: e.target.checked })} />
-              <label htmlFor="published" className="text-sm">Publié</label>
-            </div>
+          <div className="flex items-center gap-2">
+            <input id="published" type="checkbox" checked={form.published} onChange={e => setForm({ ...form, published: e.target.checked })} />
+            <label htmlFor="published" className="text-sm">Publié</label>
           </div>
         </form>
       </Modal>

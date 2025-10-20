@@ -23,10 +23,10 @@ export const AuthProvider = ({ children }) => {
           // Vérifier la validité du token avec le serveur
           try {
             const response = await ApiService.getUserInfo();
-            if (response.user) {
+            if (response.user_info) {
               // Token valide, mettre à jour les données utilisateur
-              setUser(response.user);
-              localStorage.setItem('citil_user', JSON.stringify(response.user));
+              setUser(response.user_info);
+              localStorage.setItem('citil_user', JSON.stringify(response.user_info));
             } else {
               throw new Error('Token invalide');
             }
@@ -71,8 +71,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('AuthContext - Tentative de connexion pour:', email);
       const result = await ApiService.login(email, password);
-      setUser(result.user);
+      console.log('AuthContext - Résultat de connexion:', result);
+      console.log('AuthContext - User info reçu:', result.user_info);
+      setUser(result.user_info);
+      console.log('AuthContext - Utilisateur défini:', result.user_info);
       return result;
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
@@ -83,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password, password_confirmation) => {
     try {
       const result = await ApiService.register(name, email, password, password_confirmation);
-      setUser(result.user);
+      setUser(result.user_info);
       return result;
     } catch (error) {
       console.error('Erreur lors de l\'inscription:', error);
