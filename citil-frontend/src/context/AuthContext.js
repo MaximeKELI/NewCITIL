@@ -105,6 +105,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('citil_user', JSON.stringify(userData));
+    window.dispatchEvent(new Event('authChanged'));
+  };
+
   const isAdmin = () => {
     return user && user.role === 'admin';
   };
@@ -115,6 +121,7 @@ export const AuthProvider = ({ children }) => {
       login, 
       register, 
       logout, 
+      updateUser,
       isAdmin, 
       loading 
     }}>

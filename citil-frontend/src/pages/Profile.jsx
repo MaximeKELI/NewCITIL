@@ -6,7 +6,7 @@ import { ApiService } from '../services/api.js';
 import { getAvatarUrl } from '../utils/avatarUtils.js';
 
 export default function Profile() {
-	const { user: authUser, logout: authLogout } = useAuth();
+	const { user: authUser, logout: authLogout, updateUser: authUpdateUser } = useAuth();
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [editing, setEditing] = useState(false);
@@ -161,6 +161,9 @@ export default function Profile() {
 			
 			// Mettre à jour le state local
 			setUser(updatedUserInfo);
+			
+			// Mettre à jour l'AuthContext avec les nouvelles données
+			authUpdateUser(updatedUserInfo);
 			
 			// Réinitialiser l'avatar preview avec l'URL de l'avatar sauvegardé
 			setAvatarPreview(getAvatarUrl(updatedUserInfo.avatar));
