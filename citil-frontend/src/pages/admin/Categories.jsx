@@ -15,6 +15,18 @@ export default function CategoriesAdmin() {
 
   useEffect(() => { ApiService.getCategories().then(setItems); }, []);
 
+  // Fonction pour générer un slug à partir du nom
+  function generateSlug(name) {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+      .replace(/[^a-z0-9\s-]/g, '') // Supprimer les caractères spéciaux
+      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
+      .replace(/-+/g, '-') // Supprimer les tirets multiples
+      .trim();
+  }
+
   const validate = (v) => {
     const e = {};
     if (!v.name) e.name = 'Nom requis';
@@ -31,11 +43,19 @@ export default function CategoriesAdmin() {
     if (Object.keys(e1).length) return;
     
     try {
+      // Préparer les données avec le slug généré automatiquement
+      const categoryData = {
+        ...form,
+        slug: generateSlug(form.name)
+      };
+      
+      console.log('Données à envoyer:', categoryData);
+      
       if (editing) {
-        const updated = await ApiService.updateCategory(editing.id, form);
+        const updated = await ApiService.updateCategory(editing.id, categoryData);
         setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
       } else {
-        const created = await ApiService.createCategory(form);
+        const created = await ApiService.createCategory(categoryData);
         setItems(prev => [created, ...prev]);
       }
       setOpen(false);
